@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Map - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="live-map.html" class="active">Live Map</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero live-map-hero">
+    <div class="live-map-hero-content">
+      <span class="map-tag">Smart Location View</span>
+      <h2>Live NGO Map</h2>
+      <p>Find nearby NGOs, locate donation support zones, and make pickup coordination faster.</p>
+    </div>
+  </section>
+
+  <section class="map-stats">
+    <div class="map-stat-card">
+      <span>Nearby NGOs</span>
+      <h3>8</h3>
+      <p>Active partners visible in your region</p>
+    </div>
+
+    <div class="map-stat-card">
+      <span>Fastest Pickup</span>
+      <h3>12 min</h3>
+      <p>Estimated shortest NGO response time</p>
+    </div>
+
+    <div class="map-stat-card">
+      <span>Coverage Zone</span>
+      <h3>5 Areas</h3>
+      <p>Service-ready locations around Pune</p>
+    </div>
+
+    <div class="map-stat-card">
+      <span>Map Status</span>
+      <h3>Live</h3>
+      <p>Real-time location support enabled</p>
+    </div>
+  </section>
+
+  <section class="map-toolbar">
+    <input type="text" id="ngoMapSearch" placeholder="Search NGO name..." />
+    <div class="map-toolbar-buttons">
+      <button class="btn" onclick="focusUserLocation()">My Location</button>
+      <button class="btn btn-outline" onclick="showAllNgos()">Show All NGOs</button>
+    </div>
+  </section>
+
+  <section class="live-map-layout">
+    <div class="map-main-card">
+      <div class="map-card-header">
+        <div>
+          <h3>Interactive NGO Map</h3>
+          <p>Use the map to explore nearby NGO positions and service points.</p>
+        </div>
+        <div class="map-legend">
+          <span><span class="legend-dot donor-dot"></span> You</span>
+          <span><span class="legend-dot ngo-dot"></span> NGO</span>
+        </div>
+      </div>
+
+      <div id="map"></div>
+    </div>
+
+    <div class="map-side-panel">
+      <h3>Nearby NGO List</h3>
+
+      <div class="ngo-map-card">
+        <h4>Robin Hood Army Pune</h4>
+        <p>Shivajinagar</p>
+        <span>Pickup Support Available</span>
+      </div>
+
+      <div class="ngo-map-card">
+        <h4>Feeding Hands Foundation</h4>
+        <p>Kothrud</p>
+        <span>Fast Response Area</span>
+      </div>
+
+      <div class="ngo-map-card">
+        <h4>Hope Meal Support</h4>
+        <p>Viman Nagar</p>
+        <span>Community Distribution Partner</span>
+      </div>
+
+      <div class="ngo-map-card">
+        <h4>Annadaan Welfare Group</h4>
+        <p>Hadapsar</p>
+        <span>Cooked Food Collection</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="map-insight-section">
+    <div class="map-insight-box">
+      <h2>Why This Map Matters</h2>
+      <p>
+        This live map improves coordination by showing donor location, nearby NGOs, and active support zones.
+        It adds a real-world logistics layer to the food donation platform and makes the system look much smarter.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Live NGO Mapping</p>
+  </footer>
+
+  <script>
+    let map;
+    let userMarker;
+    let ngoMarkers = [];
+    let userLocation = { lat: 18.5204, lng: 73.8567 };
+
+    const ngoData = [
+      { name: "Robin Hood Army Pune", area: "Shivajinagar", latOffset: 0.010, lngOffset: 0.010 },
+      { name: "Feeding Hands Foundation", area: "Kothrud", latOffset: -0.010, lngOffset: -0.008 },
+      { name: "Hope Meal Support", area: "Viman Nagar", latOffset: 0.015, lngOffset: -0.012 },
+      { name: "Annadaan Welfare Group", area: "Hadapsar", latOffset: -0.014, lngOffset: 0.014 }
+    ];
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 13,
+        center: userLocation,
+      });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            map.setCenter(userLocation);
+            addUserMarker();
+            addNgoMarkers();
+          },
+          () => {
+            addUserMarker();
+            addNgoMarkers();
+          }
+        );
+      } else {
+        addUserMarker();
+        addNgoMarkers();
+      }
+    }
+
+    function addUserMarker() {
+      if (userMarker) userMarker.setMap(null);
+
+      userMarker = new google.maps.Marker({
+        position: userLocation,
+        map: map,
+        title: "You are here",
+        icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+      });
+    }
+
+    function addNgoMarkers() {
+      ngoMarkers.forEach(marker => marker.setMap(null));
+      ngoMarkers = [];
+
+      ngoData.forEach(ngo => {
+        const position = {
+          lat: userLocation.lat + ngo.latOffset,
+          lng: userLocation.lng + ngo.lngOffset
+        };
+
+        const marker = new google.maps.Marker({
+          position,
+          map,
+          title: ngo.name
+        });
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="padding:8px; min-width:180px;">
+              <h4 style="margin:0 0 6px; color:#166534;">${ngo.name}</h4>
+              <p style="margin:0; font-size:13px;">Area: ${ngo.area}</p>
+            </div>
+          `
+        });
+
+        marker.addListener("click", () => {
+          infoWindow.open(map, marker);
+        });
+
+        ngoMarkers.push(marker);
+      });
+    }
+
+    function focusUserLocation() {
+      if (map) {
+        map.setCenter(userLocation);
+        map.setZoom(14);
+      }
+    }
+
+    function showAllNgos() {
+      if (!map || ngoMarkers.length === 0) return;
+
+      const bounds = new google.maps.LatLngBounds();
+      bounds.extend(userLocation);
+      ngoMarkers.forEach(marker => bounds.extend(marker.getPosition()));
+      map.fitBounds(bounds);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const searchInput = document.getElementById("ngoMapSearch");
+
+      if (searchInput) {
+        searchInput.addEventListener("input", function () {
+          const value = this.value.toLowerCase();
+
+          ngoMarkers.forEach((marker, index) => {
+            const match = ngoData[index].name.toLowerCase().includes(value);
+            marker.setVisible(match || value === "");
+          });
+        });
+      }
+    });
+
+    window.onload = initMap;
+  </script>
+
+</body>
+</html>

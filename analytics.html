@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analytics - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="analytics.html" class="active">Analytics</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero analytics-hero analytics-premium-hero">
+    <div class="analytics-hero-content">
+      <span class="analytics-tag">Data Intelligence Panel</span>
+      <h2>Analytics & Platform Insights</h2>
+      <p>
+        Monitor food donations, NGO performance, food status distribution,
+        and impact metrics through one smart analytics dashboard.
+      </p>
+    </div>
+  </section>
+
+  <section class="analytics-stats analytics-stats-premium">
+    <div class="analytics-stat-card stat-glow">
+      <span>Total Donations</span>
+      <h3>86</h3>
+      <p>All donation entries registered this month</p>
+    </div>
+
+    <div class="analytics-stat-card stat-glow">
+      <span>Meals Served</span>
+      <h3>540+</h3>
+      <p>Estimated meals distributed successfully</p>
+    </div>
+
+    <div class="analytics-stat-card stat-glow">
+      <span>Food Saved</span>
+      <h3>210 kg</h3>
+      <p>Total food prevented from going to waste</p>
+    </div>
+
+    <div class="analytics-stat-card stat-glow">
+      <span>Active NGOs</span>
+      <h3>18</h3>
+      <p>Verified NGOs currently participating</p>
+    </div>
+  </section>
+
+  <section class="analytics-container analytics-premium-grid">
+    <div class="chart-card large-card premium-chart-card">
+      <div class="analytics-card-header">
+        <div>
+          <h3>Weekly Donations</h3>
+          <p>Track donation activity across the week</p>
+        </div>
+      </div>
+      <canvas id="donationChart"></canvas>
+    </div>
+
+    <div class="chart-card premium-chart-card">
+      <div class="analytics-card-header">
+        <div>
+          <h3>Food Status</h3>
+          <p>Current donation lifecycle distribution</p>
+        </div>
+      </div>
+      <canvas id="statusChart"></canvas>
+    </div>
+
+    <div class="chart-card premium-chart-card">
+      <div class="analytics-card-header">
+        <div>
+          <h3>Area-wise Donations</h3>
+          <p>Most active locations in the city</p>
+        </div>
+      </div>
+      <canvas id="areaChart"></canvas>
+    </div>
+
+    <div class="chart-card premium-chart-card">
+      <div class="analytics-card-header">
+        <div>
+          <h3>Monthly Growth</h3>
+          <p>Platform growth in recent months</p>
+        </div>
+      </div>
+      <canvas id="growthChart"></canvas>
+    </div>
+  </section>
+
+  <section class="analytics-bottom analytics-bottom-premium">
+    <div class="analytics-panel premium-panel">
+      <h3>Top Performing NGOs</h3>
+
+      <div class="ngo-performance-item">
+        <div>
+          <strong>Robin Hood Army Pune</strong>
+          <p>Shivajinagar</p>
+        </div>
+        <span>22 pickups</span>
+      </div>
+
+      <div class="ngo-performance-item">
+        <div>
+          <strong>Feeding Hands Foundation</strong>
+          <p>Kothrud</p>
+        </div>
+        <span>18 pickups</span>
+      </div>
+
+      <div class="ngo-performance-item">
+        <div>
+          <strong>Hope Meal Support</strong>
+          <p>Viman Nagar</p>
+        </div>
+        <span>14 pickups</span>
+      </div>
+
+      <div class="ngo-performance-item">
+        <div>
+          <strong>Annadaan Welfare Group</strong>
+          <p>Hadapsar</p>
+        </div>
+        <span>11 pickups</span>
+      </div>
+    </div>
+
+    <div class="analytics-panel premium-panel">
+      <h3>Platform Insights</h3>
+      <ul class="insight-list">
+        <li>Saturday recorded the highest donation volume.</li>
+        <li>Collected donations currently form the largest share of total entries.</li>
+        <li>Shivajinagar and Kothrud remain the strongest donation zones.</li>
+        <li>Robin Hood Army Pune handled the highest successful pickup count.</li>
+        <li>Food recovery is improving steadily month by month.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="analytics-summary-section">
+    <div class="analytics-summary-box">
+      <h2>Why This Analytics Page Matters</h2>
+      <p>
+        This dashboard transforms raw donation data into actionable insights,
+        helping admins understand patterns, identify strong NGO partners,
+        monitor city-wide activity, and improve food redistribution efficiency.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Advanced Analytics Dashboard</p>
+  </footer>
+
+  <script>
+    const donationCtx = document.getElementById("donationChart");
+    const statusCtx = document.getElementById("statusChart");
+    const areaCtx = document.getElementById("areaChart");
+    const growthCtx = document.getElementById("growthChart");
+
+    new Chart(donationCtx, {
+      type: "bar",
+      data: {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [{
+          label: "Donations",
+          data: [8, 11, 9, 14, 13, 18, 13],
+          backgroundColor: [
+            "#166534",
+            "#15803d",
+            "#16a34a",
+            "#22c55e",
+            "#4ade80",
+            "#86efac",
+            "#bbf7d0"
+          ],
+          borderRadius: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    new Chart(statusCtx, {
+      type: "doughnut",
+      data: {
+        labels: ["Pending", "Assigned", "Collected"],
+        datasets: [{
+          data: [18, 24, 44],
+          backgroundColor: ["#facc15", "#60a5fa", "#22c55e"],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true
+      }
+    });
+
+    new Chart(areaCtx, {
+      type: "line",
+      data: {
+        labels: ["Shivajinagar", "Kothrud", "Hadapsar", "Viman Nagar", "Pimpri"],
+        datasets: [{
+          label: "Donations by Area",
+          data: [24, 20, 14, 16, 12],
+          borderColor: "#166534",
+          backgroundColor: "rgba(34, 197, 94, 0.18)",
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    new Chart(growthCtx, {
+      type: "radar",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        datasets: [{
+          label: "Growth",
+          data: [30, 40, 45, 52, 60, 72],
+          backgroundColor: "rgba(34, 197, 94, 0.18)",
+          borderColor: "#166534",
+          pointBackgroundColor: "#22c55e"
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

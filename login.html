@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="view-list.html">View List</a></li>
+        <li><a href="login.html" class="active">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="login-premium-page">
+    <div class="login-premium-card">
+
+      <div class="login-premium-left">
+        <span class="login-premium-tag">Secure Access Portal</span>
+        <h2>Access Your Role-Based Dashboard</h2>
+        <p>
+          Login as a donor, NGO receiver, or admin to manage food donation
+          operations through a dedicated and personalized dashboard.
+        </p>
+
+        <div class="role-preview-grid">
+          <div class="role-preview-card donor-role">
+            <h3>Donor</h3>
+            <p>Track donations, quantity, and recent contribution activity.</p>
+          </div>
+
+          <div class="role-preview-card ngo-role">
+            <h3>Receiver / NGO</h3>
+            <p>Accept requests, manage pickups, and coordinate food distribution.</p>
+          </div>
+
+          <div class="role-preview-card admin-role">
+            <h3>Admin</h3>
+            <p>Monitor complete platform activity and maintain overall control.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-premium-right">
+        <div class="login-form-box">
+          <h3>Account Login</h3>
+          <p class="login-subtext">Enter your details and choose your access role.</p>
+
+          <form id="loginForm" class="modern-form">
+            <div class="form-group">
+              <label for="loginEmail">Email</label>
+              <input type="email" id="loginEmail" placeholder="Enter your email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required />
+            </div>
+
+            <div class="form-group">
+              <label for="loginRole">Select Role</label>
+              <select id="loginRole" required>
+                <option value="">Choose role</option>
+                <option value="donor">Donor</option>
+                <option value="ngo">Receiver / NGO</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn login-btn">Login Now</button>
+          </form>
+
+          <p id="loginMessage" class="success-message"></p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Secure Login</p>
+  </footer>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
+
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const role = document.getElementById("loginRole").value;
+
+      if (!email || !password || !role) {
+        loginMessage.textContent = "Please fill all fields.";
+        return;
+      }
+
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userEmail", email);
+
+      loginMessage.textContent = "Login successful! Redirecting...";
+
+      setTimeout(() => {
+        if (role === "donor") {
+          window.location.href = "donor-dashboard.html";
+        } else if (role === "ngo") {
+          window.location.href = "ngo-dashboard.html";
+        } else if (role === "admin") {
+          window.location.href = "admin-dashboard.html";
+        }
+      }, 900);
+    });
+  </script>
+
+</body>
+</html>

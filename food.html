@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Available Food - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html" class="active">Available Food</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero food-hero">
+    <h2>Available Food Listings</h2>
+    <p>
+      Browse real donor food requests that are ready for NGO pickup.
+      Once any NGO accepts a request, it disappears from this page.
+    </p>
+  </section>
+
+  <section class="filter-section">
+    <input type="text" id="foodSearch" placeholder="Search by food type or donor..." />
+    <select id="foodFilter">
+      <option value="all">All Status</option>
+      <option value="Pending">Pending</option>
+    </select>
+  </section>
+
+  <section class="food-grid" id="foodList"></section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Smart food redistribution for Pune</p>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
+  <script src="script.js"></script>
+
+  <script>
+    async function loadAvailableFood() {
+      const foodList = document.getElementById("foodList");
+      const foodSearch = document.getElementById("foodSearch");
+      const foodFilter = document.getElementById("foodFilter");
+
+      if (!foodList) return;
+
+      const searchValue = foodSearch ? foodSearch.value.toLowerCase().trim() : "";
+      const selectedStatus = foodFilter ? foodFilter.value : "all";
+
+      foodList.innerHTML = `<p style="padding:20px;">Loading food listings...</p>`;
+
+      const { data: donations, error } = await supabase
+        .from("donation")
+        .select("*")
+        .eq("status", "Pending")
+        .order("id", { ascending: false });
+
+      if (error) {
+        foodList.innerHTML = `
+          <div class="food-card">
+            <h3>Unable to load food listings</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+        return;
+      }
+
+      let filtered = donations || [];
+
+      if (searchValue) {
+        filtered = filtered.filter((d) =>
+          (d.foodType || "").toLowerCase().includes(searchValue) ||
+          (d.donorName || "").toLowerCase().includes(searchValue) ||
+          (d.area || "").toLowerCase().includes(searchValue)
+        );
+      }
+
+      if (selectedStatus !== "all") {
+        filtered = filtered.filter((d) => (d.status || "Pending") === selectedStatus);
+      }
+
+      foodList.innerHTML = "";
+
+      if (filtered.length === 0) {
+        foodList.innerHTML = `
+          <div class="food-card">
+            <h3>No food available</h3>
+            <p>Food will appear here only after a donor submits a donation.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((donation) => {
+        const assignedNgo =
+          donation.ngoSelect && donation.ngoSelect.trim() !== ""
+            ? donation.ngoSelect
+            : "Not Assigned";
+
+        const card = document.createElement("div");
+        card.className = "food-card";
+        card.setAttribute("data-status", "Pending");
+
+        card.innerHTML = `
+          <div class="food-card-top">
+            <span class="food-badge pending">Pending</span>
+            <span class="food-time">${donation.expiryTime || "No expiry info"}</span>
+          </div>
+
+          <h3>${donation.foodType || "Food Donation"}</h3>
+          <p><strong>Donor:</strong> ${donation.donorName || "Anonymous Donor"}</p>
+          <p><strong>Quantity:</strong> ${donation.quantity || "-"}</p>
+          <p><strong>Area:</strong> ${donation.area || "-"}</p>
+          <p><strong>Assigned NGO:</strong> ${assignedNgo}</p>
+          <p><strong>Pickup Address:</strong> ${donation.pickupAddress || "-"}</p>
+        `;
+
+        foodList.appendChild(card);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      setupRoleNavbar();
+      loadAvailableFood();
+
+      const foodSearch = document.getElementById("foodSearch");
+      const foodFilter = document.getElementById("foodFilter");
+
+      if (foodSearch) {
+        foodSearch.addEventListener("keyup", loadAvailableFood);
+      }
+
+      if (foodFilter) {
+        foodFilter.addEventListener("change", loadAvailableFood);
+      }
+
+      setInterval(loadAvailableFood, 30000);
+    });
+  </script>
+</body>
+</html>

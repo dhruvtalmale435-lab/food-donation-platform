@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NGO Dashboard - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="view-list.html">View List</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="ngo-dashboard.html" class="active">NGO Dashboard</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="ngo-hero">
+    <div class="ngo-hero-left">
+      <span class="ngo-tag">Receiver / NGO Control Panel</span>
+      <h2>Welcome Back, NGO Partner</h2>
+      <p>
+        View new donation requests, manage pickups, track completed support,
+        and coordinate food distribution through one smart dashboard.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="food.html" class="btn">Check Requests</a>
+        <a href="ngos.html" class="btn btn-outline">NGO Network</a>
+      </div>
+    </div>
+
+    <div class="ngo-profile-card premium-ngo-profile">
+      <div class="ngo-avatar">N</div>
+      <h3 id="ngoNameDisplay">Hope Meal Support</h3>
+      <p id="ngoEmail">Not Available</p>
+
+      <div class="ngo-profile-meta">
+        <span>Role: Receiver / NGO</span>
+        <span>City: Pune</span>
+        <span>Status: Active</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ngo-stats-grid">
+    <div class="ngo-stat-card premium-stat">
+      <span>Available Donations</span>
+      <h3 id="availableDonations">0</h3>
+      <p>Fresh requests currently waiting for NGO action</p>
+    </div>
+
+    <div class="ngo-stat-card premium-stat">
+      <span>Accepted Requests</span>
+      <h3 id="acceptedDonations">0</h3>
+      <p>Food requests confirmed by your NGO</p>
+    </div>
+
+    <div class="ngo-stat-card premium-stat">
+      <span>Completed Pickups</span>
+      <h3 id="completedPickups">0</h3>
+      <p>Successfully closed donation pickups</p>
+    </div>
+
+    <div class="ngo-stat-card premium-stat">
+      <span>Coverage Areas</span>
+      <h3 id="coverageAreas">0</h3>
+      <p>Unique active service areas handled by your NGO</p>
+    </div>
+  </section>
+
+  <section class="ngo-main-grid">
+    <div class="ngo-panel-card premium-panel-card">
+      <div class="panel-head">
+        <div>
+          <h2>Donation Requests</h2>
+          <p>Review, accept, and complete incoming food requests</p>
+        </div>
+      </div>
+
+      <div id="ngoDonationList" class="ngo-donation-list"></div>
+    </div>
+
+    <div class="ngo-panel-card premium-panel-card">
+      <div class="panel-head">
+        <div>
+          <h2>NGO Operations</h2>
+          <p>Quick operational insights</p>
+        </div>
+      </div>
+
+      <div class="ngo-status-boxes">
+        <div class="ngo-status-item premium-status-item">
+          <h4>Fast Pickup Window</h4>
+          <p>Prioritize short-expiry donations for quick collection.</p>
+        </div>
+
+        <div class="ngo-status-item premium-status-item">
+          <h4>Distribution Ready</h4>
+          <p>Accepted requests should move toward completion quickly.</p>
+        </div>
+
+        <div class="ngo-status-item premium-status-item">
+          <h4>Area Awareness</h4>
+          <p>Monitor which zones require stronger NGO presence.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ngo-bottom-grid">
+    <div class="ngo-panel-card premium-panel-card">
+      <div class="panel-head">
+        <div>
+          <h2>Recent NGO Activity</h2>
+          <p>Latest request movements from your side</p>
+        </div>
+      </div>
+
+      <div id="ngoActivityTimeline" class="ngo-timeline"></div>
+    </div>
+
+    <div class="ngo-panel-card ngo-highlight-card premium-highlight-card">
+      <h2>Your NGO Creates Real Impact</h2>
+      <p>
+        Every accepted request means more food saved and more support delivered.
+        Quick NGO action is what turns listings into real impact.
+      </p>
+      <a href="food.html" class="btn">Open Food Requests</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | NGO Dashboard</p>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
+
+  <script>
+    protectPage(["ngo"]);
+    setupRoleNavbar();
+
+    function ngoStatusClass(status) {
+      const s = (status || "Pending").toLowerCase();
+      if (s === "completed") return "completed";
+      if (s === "accepted") return "accepted";
+      return "pending";
+    }
+
+    function getPriority(quantity) {
+      const qty = parseInt(quantity) || 0;
+      if (qty >= 20) return "High Priority";
+      if (qty >= 10) return "Medium Priority";
+      return "Standard";
+    }
+
+    async function acceptDonation(id) {
+      const { error } = await supabase
+        .from("donation")
+        .update({ status: "Accepted" })
+        .eq("id", id);
+
+      if (error) {
+        alert("Failed to accept donation: " + error.message);
+        return;
+      }
+
+      loadNgoDashboard();
+    }
+
+    async function completeDonation(id) {
+      const { error } = await supabase
+        .from("donation")
+        .update({ status: "Completed" })
+        .eq("id", id);
+
+      if (error) {
+        alert("Failed to complete donation: " + error.message);
+        return;
+      }
+
+      loadNgoDashboard();
+    }
+
+    async function loadNgoDashboard() {
+      const userEmail = localStorage.getItem("userEmail") || "Not Available";
+      document.getElementById("ngoEmail").textContent = userEmail;
+
+      const ngoDonationList = document.getElementById("ngoDonationList");
+      const ngoActivityTimeline = document.getElementById("ngoActivityTimeline");
+
+      ngoDonationList.innerHTML = "";
+      ngoActivityTimeline.innerHTML = "";
+
+      const { data: donations, error } = await supabase
+        .from("donation")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) {
+        console.error("SUPABASE FETCH ERROR:", error.message);
+        ngoDonationList.innerHTML = `
+          <div class="ngo-empty-card">
+            <h3>Unable to load donations</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+        return;
+      }
+
+      let available = 0;
+      let accepted = 0;
+      let completed = 0;
+      const areas = new Set();
+
+      donations.forEach((donation) => {
+        const status = donation.status || "Pending";
+        const area = donation.area || "-";
+        if (area !== "-") areas.add(area);
+
+        if (status === "Pending") available++;
+        if (status === "Accepted") accepted++;
+        if (status === "Completed") completed++;
+
+        const priority = getPriority(donation.quantity);
+
+        const card = document.createElement("div");
+        card.className = "ngo-donation-card premium-request-card";
+        card.innerHTML = `
+          <div class="ngo-donation-top">
+            <div>
+              <h3>${donation.foodType || "Food Donation"}</h3>
+              <p class="ngo-request-sub">${donation.donorName || "Anonymous Donor"} • ${area}</p>
+            </div>
+            <span class="status-pill ${ngoStatusClass(status)}">${status}</span>
+          </div>
+
+          <div class="ngo-request-meta">
+            <span><strong>Quantity:</strong> ${donation.quantity || "-"}</span>
+            <span><strong>Priority:</strong> ${priority}</span>
+          </div>
+
+          <p><strong>Pickup Address:</strong> ${donation.pickupAddress || "-"}</p>
+          <p><strong>Expiry:</strong> ${donation.expiryTime || "-"}</p>
+
+          <div class="ngo-action-buttons">
+            <button class="btn" onclick="acceptDonation(${donation.id})">Accept</button>
+            <button class="btn ngo-complete-btn" onclick="completeDonation(${donation.id})">Complete</button>
+          </div>
+        `;
+        ngoDonationList.appendChild(card);
+      });
+
+      const latest = donations.slice(0, 5);
+
+      if (latest.length === 0) {
+        ngoActivityTimeline.innerHTML = `
+          <div class="ngo-timeline-item">
+            <h4>No NGO activity yet</h4>
+            <p>Accepted and completed requests will appear here.</p>
+          </div>
+        `;
+      } else {
+        latest.forEach((donation) => {
+          const item = document.createElement("div");
+          item.className = "ngo-timeline-item premium-timeline-item";
+          item.innerHTML = `
+            <h4>${donation.foodType || "Food Donation"}</h4>
+            <p>${donation.quantity || "-"} • ${donation.area || "-"} • ${donation.status || "Pending"}</p>
+          `;
+          ngoActivityTimeline.appendChild(item);
+        });
+      }
+
+      document.getElementById("availableDonations").textContent = available;
+      document.getElementById("acceptedDonations").textContent = accepted;
+      document.getElementById("completedPickups").textContent = completed;
+      document.getElementById("coverageAreas").textContent = areas.size;
+
+      if (donations.length === 0) {
+        ngoDonationList.innerHTML = `
+          <div class="ngo-empty-card">
+            <h3>No donations available</h3>
+            <p>New donor requests will appear here.</p>
+          </div>
+        `;
+      }
+    }
+
+    loadNgoDashboard();
+  </script>
+
+</body>
+</html>

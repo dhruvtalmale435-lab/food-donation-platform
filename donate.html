@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donate Food - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html" class="active">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero donate-hero">
+    <h2>Donate Surplus Food</h2>
+    <p>
+      This donation form is available only for logged-in donors.
+    </p>
+  </section>
+
+  <section class="donate-wrapper">
+    <div class="donate-left">
+      <div class="donate-info-card">
+        <h3>Why Donate With Us?</h3>
+        <ul>
+          <li>Quick NGO matching</li>
+          <li>Simple donation form</li>
+          <li>Helps reduce food waste</li>
+          <li>Supports people in need</li>
+        </ul>
+      </div>
+
+      <div class="donate-info-card">
+        <h3>Donation Tips</h3>
+        <ul>
+          <li>Ensure food is fresh and hygienic</li>
+          <li>Mention exact quantity</li>
+          <li>Add pickup location clearly</li>
+          <li>Submit before expiry time</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="donate-form-card">
+      <h3>Donation Form</h3>
+
+      <form id="donationForm" class="modern-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="donorName">Donor Name</label>
+            <input type="text" id="donorName" placeholder="Enter your name or organization" required />
+          </div>
+
+          <div class="form-group">
+            <label for="contactNumber">Contact Number</label>
+            <input type="tel" id="contactNumber" placeholder="Enter contact number" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="foodType">Food Type</label>
+            <input type="text" id="foodType" placeholder="Enter food type" required />
+          </div>
+
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" placeholder="Enter quantity" min="1" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="foodCategory">Food Category</label>
+            <select id="foodCategory">
+              <option value="">Select category</option>
+              <option>Cooked Food</option>
+              <option>Packaged Food</option>
+              <option>Dry Food</option>
+              <option>Snacks</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="expiryTime">Expiry Time</label>
+            <input type="text" id="expiryTime" placeholder="Enter expiry time" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pickupAddress">Pickup Address</label>
+          <textarea id="pickupAddress" rows="3" placeholder="Enter complete pickup address" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="area">Area</label>
+            <select id="area" required>
+              <option value="">Select area</option>
+              <option>Shivajinagar</option>
+              <option>Kothrud</option>
+              <option>Hadapsar</option>
+              <option>Viman Nagar</option>
+              <option>Pimpri</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ngoSelect">Preferred NGO</label>
+            <select id="ngoSelect">
+              <option value="">Auto match NGO</option>
+              <option>Robin Hood Army Pune</option>
+              <option>Feeding Hands Foundation</option>
+              <option>Annadaan Welfare Group</option>
+              <option>Hope Meal Support</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Additional Notes</label>
+          <textarea id="notes" rows="3" placeholder="Any extra details about the food"></textarea>
+        </div>
+
+        <button type="submit" class="btn donate-btn">Submit Donation</button>
+      </form>
+
+      <p id="donationMessage" class="success-message"></p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Donate food, share hope</p>
+  </footer>
+
+  <script src="auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
+  <script src="script.js"></script>
+
+  <script>
+    protectPage(["donor"]);
+    setupRoleNavbar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:,">
+  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVFlf3CPcV2e6exolxpL3n66gAaAypvPg"></script>
+  
+  
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <section class="hero premium-hero">
+    <div class="hero-text">
+      <span class="hero-tag">Smart Food Redistribution Platform</span>
+      <h2>Share Food, Spread Hope</h2>
+      <p>
+        Connect surplus food with nearby NGOs and communities in need.
+        Our platform helps reduce food waste, support lives, and build
+        a more caring city.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="donate.html" class="btn">Donate Now</a>
+        <a href="ngos.html" class="btn btn-outline">Find NGOs</a>
+      </div>
+
+      <div class="hero-highlights">
+        <div class="highlight-chip">Fast NGO Matching</div>
+        <div class="highlight-chip">Simple Donation Flow</div>
+        <div class="highlight-chip">Impact Tracking</div>
+      </div>
+    </div>
+
+    <div class="hero-image hero-image-card">
+      <img src="https://static.vecteezy.com/system/resources/previews/024/233/308/original/food-logo-design-illustration-with-modern-creative-concept-vector.jpg" />
+      <div class="floating-card">
+        <h4>Live Impact</h4>
+        <p>120 kg food saved this month</p>
+      </div>
+    </div>
+  </section>
+  <section class="live-feed">
+  <h2>🔥 Live Donation Activity</h2>
+
+  <div id="activityFeed" class="feed-container">
+    <!-- Dynamic content will come here -->
+  </div>
+</section>
+
+  <section class="features">
+    <h2>How It Works</h2>
+    <p class="section-subtitle">
+      A simple and effective process to make food donation faster and smarter.
+    </p>
+
+    <div class="feature-container">
+      <div class="feature-card premium-card">
+        <div class="feature-icon">🍱</div>
+        <h3>1. Donate Food</h3>
+        <p>Restaurants, hostels, caterers, and individuals can list extra food in seconds.</p>
+      </div>
+
+      <div class="feature-card premium-card">
+        <div class="feature-icon">🤝</div>
+        <h3>2. NGO Matching</h3>
+        <p>Nearby NGOs can quickly view requests and arrange pickup efficiently.</p>
+      </div>
+
+      <div class="feature-card premium-card">
+        <div class="feature-icon">🌱</div>
+        <h3>3. Reduce Waste</h3>
+        <p>Good food reaches people in need instead of being thrown away.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="impact">
+  <h2>Our Impact</h2>
+  <p class="section-subtitle">
+    Measurable outcomes that show how food sharing can create real change.
+  </p>
+
+  <div class="impact-grid">
+    <div class="impact-card premium-card">
+      <h3 id="mealsDonated">0</h3>
+      <p>Meals Donated</p>
+    </div>
+    <div class="impact-card premium-card">
+      <h3 id="partnerNgos">0</h3>
+      <p>Partner NGOs</p>
+    </div>
+    <div class="impact-card premium-card">
+      <h3 id="foodSaved">0 kg</h3>
+      <p>Food Saved</p>
+    </div>
+    <div class="impact-card premium-card">
+      <h3 id="activeDonors">0</h3>
+      <p>Active Donors</p>
+    </div>
+  </div>
+</section>
+
+  <section class="why-choose-us">
+    <h2>Why Choose Our Platform?</h2>
+    <div class="why-grid">
+      <div class="why-card premium-card">
+        <h3>Easy to Use</h3>
+        <p>Simple pages and clean navigation for donors, NGOs, and admins.</p>
+      </div>
+      <div class="why-card premium-card">
+        <h3>Quick Coordination</h3>
+        <p>Helps connect donations with the right NGO faster.</p>
+      </div>
+      <div class="why-card premium-card">
+        <h3>Social Impact</h3>
+        <p>Supports zero food waste and helps communities that need support.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-ngos">
+    <h2>Featured NGOs</h2>
+    <p class="section-subtitle">
+      Trusted NGOs and community partners helping us distribute food better.
+    </p>
+
+    <div class="feature-container">
+      <div class="feature-card premium-card">
+        <h3>Robin Hood Army Pune</h3>
+        <p><strong>Area:</strong> Shivajinagar</p>
+        <p><strong>Status:</strong> Active</p>
+      </div>
+
+      <div class="feature-card premium-card">
+        <h3>Feeding Hands Foundation</h3>
+        <p><strong>Area:</strong> Kothrud</p>
+        <p><strong>Status:</strong> Available</p>
+      </div>
+
+      <div class="feature-card premium-card">
+        <h3>Hope Meal Support</h3>
+        <p><strong>Area:</strong> Viman Nagar</p>
+        <p><strong>Status:</strong> Active</p>
+      </div>
+    </div>
+
+    <div class="center-btn">
+      <a href="ngos.html" class="btn">View All NGOs</a>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-box">
+      <h2>Ready to Make a Difference?</h2>
+      <p>
+        Join our mission to reduce food waste and support people in need.
+        Start by donating food or exploring our NGO network.
+      </p>
+      <div class="hero-buttons">
+        <a href="donate.html" class="btn">Start Donating</a>
+        <a href="dashboard.html" class="btn btn-outline">View Dashboard</a>
+      </div>
+    </div>
+  </section>
+  
+
+  <div class="form-group">
+    <label for="quantity">Quantity</label>
+    <input type="number" id="quantity" min="1" required />
+  </div>
+</div>
+
+  <footer>
+  <p>&copy; 2026 Food Donation Platform | Working together for zero food waste</p>
+</footer>
+
+<script src="auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
+<script src="script.js"></script>
+
+<script>
+  const introOverlay = document.getElementById("introOverlay");
+  const cursorGlow = document.getElementById("cursorGlow");
+  const introTitle = document.getElementById("introTitle");
+
+  function updateIntroEffect(x, y) {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    const percentX = (x / w) * 100;
+    const percentY = (y / h) * 100;
+
+    if (cursorGlow) {
+      cursorGlow.style.left = x + "px";
+      cursorGlow.style.top = y + "px";
+    }
+
+    if (introTitle) {
+      introTitle.style.setProperty("--mx", percentX + "%");
+      introTitle.style.setProperty("--my", percentY + "%");
+    }
+  }
+
+  document.addEventListener("mousemove", function (e) {
+    if (introOverlay && !introOverlay.classList.contains("hide-intro")) {
+      updateIntroEffect(e.clientX, e.clientY);
+    }
+  });
+
+  document.addEventListener("touchmove", function (e) {
+    if (introOverlay && !introOverlay.classList.contains("hide-intro")) {
+      const touch = e.touches[0];
+      if (touch) {
+        updateIntroEffect(touch.clientX, touch.clientY);
+      }
+    }
+  }, { passive: true });
+
+  document.addEventListener("dblclick", function () {
+    if (introOverlay) {
+      introOverlay.classList.add("hide-intro");
+    }
+  });
+
+  window.addEventListener("load", function () {
+    updateIntroEffect(window.innerWidth / 2, window.innerHeight / 2);
+  });
+</script>
+
+<script>
+  setupRoleNavbar();
+</script>
+</body>
+</html>

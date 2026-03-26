@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Donation List - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="view-list.html" class="active">View List</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero">
+    <h2>Donation View List</h2>
+    <p>Manage all food donations from one smart panel.</p>
+  </section>
+
+  <section class="view-summary">
+    <div class="summary-card">
+      <span>Total Donations</span>
+      <h3 id="totalCount">0</h3>
+    </div>
+    <div class="summary-card">
+      <span>Pending</span>
+      <h3 id="pendingCount">0</h3>
+    </div>
+    <div class="summary-card">
+      <span>Accepted</span>
+      <h3 id="acceptedCount">0</h3>
+    </div>
+    <div class="summary-card">
+      <span>Completed</span>
+      <h3 id="completedCount">0</h3>
+    </div>
+  </section>
+
+  <section class="view-list-section">
+    <div class="view-list-top advanced-toolbar">
+      <input type="text" id="viewSearch" placeholder="Search donor, food, area..." />
+
+      <select id="statusFilter">
+        <option value="all">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Accepted">Accepted</option>
+        <option value="Completed">Completed</option>
+      </select>
+
+      <select id="areaFilter">
+        <option value="all">All Areas</option>
+        <option value="Shivajinagar">Shivajinagar</option>
+        <option value="Kothrud">Kothrud</option>
+        <option value="Hadapsar">Hadapsar</option>
+        <option value="Viman Nagar">Viman Nagar</option>
+        <option value="Pimpri">Pimpri</option>
+      </select>
+
+      <select id="sortFilter">
+        <option value="latest">Latest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="quantity-high">Quantity High to Low</option>
+        <option value="quantity-low">Quantity Low to High</option>
+      </select>
+
+      <button class="btn" onclick="exportDonations()">Export JSON</button>
+      <button class="btn btn-outline" onclick="clearAllDonations()">Clear All</button>
+    </div>
+
+    <div id="viewListContainer" class="view-list-grid"></div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform</p>
+  </footer>
+
+  <script>
+    const viewListContainer = document.getElementById("viewListContainer");
+    const viewSearch = document.getElementById("viewSearch");
+    const statusFilter = document.getElementById("statusFilter");
+    const areaFilter = document.getElementById("areaFilter");
+    const sortFilter = document.getElementById("sortFilter");
+
+    const totalCount = document.getElementById("totalCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const acceptedCount = document.getElementById("acceptedCount");
+    const completedCount = document.getElementById("completedCount");
+
+    function getDonations() {
+      return JSON.parse(localStorage.getItem("donations")) || [];
+    }
+
+    function saveDonations(donations) {
+      localStorage.setItem("donations", JSON.stringify(donations));
+    }
+
+    function updateSummary(donations) {
+      totalCount.textContent = donations.length;
+      pendingCount.textContent = donations.filter(d => (d.status || "Pending") === "Pending").length;
+      acceptedCount.textContent = donations.filter(d => d.status === "Accepted").length;
+      completedCount.textContent = donations.filter(d => d.status === "Completed").length;
+    }
+
+    function parseQuantity(value) {
+      const num = parseInt(value);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function renderDonations() {
+      const donations = getDonations();
+      const searchText = viewSearch.value.toLowerCase();
+      const selectedStatus = statusFilter.value;
+      const selectedArea = areaFilter.value;
+      const selectedSort = sortFilter.value;
+
+      updateSummary(donations);
+
+      let filtered = donations.filter((donation) => {
+        const text = `
+          ${donation.donorName || ""}
+          ${donation.foodType || donation.food || ""}
+          ${donation.quantity || ""}
+          ${donation.area || ""}
+          ${donation.pickupAddress || donation.location || ""}
+          ${donation.status || "Pending"}
+        `.toLowerCase();
+
+        const matchesSearch = text.includes(searchText);
+        const matchesStatus =
+          selectedStatus === "all" || (donation.status || "Pending") === selectedStatus;
+        const matchesArea =
+          selectedArea === "all" || (donation.area || "-") === selectedArea;
+
+        return matchesSearch && matchesStatus && matchesArea;
+      });
+
+      if (selectedSort === "latest") {
+        filtered = filtered.reverse();
+      } else if (selectedSort === "quantity-high") {
+        filtered.sort((a, b) => parseQuantity(b.quantity) - parseQuantity(a.quantity));
+      } else if (selectedSort === "quantity-low") {
+        filtered.sort((a, b) => parseQuantity(a.quantity) - parseQuantity(b.quantity));
+      }
+
+      viewListContainer.innerHTML = "";
+
+      if (filtered.length === 0) {
+        viewListContainer.innerHTML = `
+          <div class="empty-list-card">
+            <h3>No donations found</h3>
+            <p>Try changing filters or add new donations from the Donate page.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((donation) => {
+        const originalIndex = donations.indexOf(donation);
+        const currentStatus = donation.status || "Pending";
+
+        const card = document.createElement("div");
+        card.className = "view-card";
+
+        card.innerHTML = `
+          <div class="view-card-top">
+            <h3>${donation.foodType || donation.food || "Food Item"}</h3>
+            <span class="status-pill ${currentStatus.toLowerCase()}">${currentStatus}</span>
+          </div>
+
+          <p><strong>Donor:</strong> ${donation.donorName || "Anonymous Donor"}</p>
+          <p><strong>Quantity:</strong> ${donation.quantity || "-"}</p>
+          <p><strong>Area:</strong> ${donation.area || "-"}</p>
+          <p><strong>Pickup Address:</strong> ${donation.pickupAddress || donation.location || "-"}</p>
+          <p><strong>Expiry Time:</strong> ${donation.expiryTime || donation.expiry || "-"}</p>
+          <p><strong>Contact:</strong> ${donation.contactNumber || "-"}</p>
+          <p><strong>NGO:</strong> ${donation.ngoSelect || "Auto Match"}</p>
+
+          <div class="view-card-actions">
+            <button class="btn" onclick="markAccepted(${originalIndex})">Accept</button>
+            <button class="btn complete-btn" onclick="markCompleted(${originalIndex})">Complete</button>
+            <button class="btn btn-outline" onclick="deleteDonation(${originalIndex})">Delete</button>
+          </div>
+        `;
+
+        viewListContainer.appendChild(card);
+      });
+    }
+
+    function markAccepted(index) {
+      const donations = getDonations();
+      if (donations[index]) {
+        donations[index].status = "Accepted";
+        saveDonations(donations);
+        renderDonations();
+      }
+    }
+
+    function markCompleted(index) {
+      const donations = getDonations();
+      if (donations[index]) {
+        donations[index].status = "Completed";
+        saveDonations(donations);
+        renderDonations();
+      }
+    }
+
+    function deleteDonation(index) {
+      const donations = getDonations();
+      donations.splice(index, 1);
+      saveDonations(donations);
+      renderDonations();
+    }
+
+    function clearAllDonations() {
+      localStorage.removeItem("donations");
+      renderDonations();
+    }
+
+    function exportDonations() {
+      const donations = getDonations();
+      const blob = new Blob([JSON.stringify(donations, null, 2)], {
+        type: "application/json"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "donations-data.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    viewSearch.addEventListener("input", renderDonations);
+    statusFilter.addEventListener("change", renderDonations);
+    areaFilter.addEventListener("change", renderDonations);
+    sortFilter.addEventListener("change", renderDonations);
+
+    renderDonations();
+  </script>
+  <script src="auth.js"></script>
+  <script>
+    setupRoleNavbar();
+  </script>
+
+</body>
+</html>

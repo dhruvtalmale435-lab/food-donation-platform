@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partner NGOs - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="ngos.html" class="active">NGOs</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero">
+    <h2>Partner NGOs</h2>
+    <p>Connect with nearby NGOs for quick food pickup and distribution.</p>
+  </section>
+
+  <section class="filter-section">
+    <input type="text" id="ngoSearch" placeholder="Search NGO by name or area..." />
+    <select id="ngoFilter">
+      <option value="all">All Areas</option>
+      <option value="Shivajinagar">Shivajinagar</option>
+      <option value="Kothrud">Kothrud</option>
+      <option value="Hadapsar">Hadapsar</option>
+      <option value="Viman Nagar">Viman Nagar</option>
+      <option value="Pimpri">Pimpri</option>
+    </select>
+  </section>
+
+  <section class="ngo-list" id="ngoList">
+    <div class="ngo-card" data-area="Shivajinagar">
+      <h3>Robin Hood Army Pune</h3>
+      <p><strong>Area:</strong> Shivajinagar</p>
+      <p><strong>Accepts:</strong> Cooked Food, Packaged Food</p>
+      <p><strong>Contact:</strong> +91 9876543210</p>
+      <p><strong>Status:</strong> Available</p>
+      <button>Request Pickup</button>
+    </div>
+
+    <div class="ngo-card" data-area="Kothrud">
+      <h3>Feeding Hands Foundation</h3>
+      <p><strong>Area:</strong> Kothrud</p>
+      <p><strong>Accepts:</strong> Dry Food, Meals</p>
+      <p><strong>Contact:</strong> +91 9765432101</p>
+      <p><strong>Status:</strong> Available</p>
+      <button>Request Pickup</button>
+    </div>
+
+    <div class="ngo-card" data-area="Hadapsar">
+      <h3>Annadaan Welfare Group</h3>
+      <p><strong>Area:</strong> Hadapsar</p>
+      <p><strong>Accepts:</strong> Fresh Cooked Food</p>
+      <p><strong>Contact:</strong> +91 9988776655</p>
+      <p><strong>Status:</strong> Busy</p>
+      <button>Request Pickup</button>
+    </div>
+
+    <div class="ngo-card" data-area="Viman Nagar">
+      <h3>Hope Meal Support</h3>
+      <p><strong>Area:</strong> Viman Nagar</p>
+      <p><strong>Accepts:</strong> Snacks, Meals, Packaged Food</p>
+      <p><strong>Contact:</strong> +91 9123456780</p>
+      <p><strong>Status:</strong> Available</p>
+      <button>Request Pickup</button>
+    </div>
+
+    <div class="ngo-card" data-area="Pimpri">
+      <h3>Community Food Care</h3>
+      <p><strong>Area:</strong> Pimpri</p>
+      <p><strong>Accepts:</strong> Dry Food, Cooked Food</p>
+      <p><strong>Contact:</strong> +91 9012345678</p>
+      <p><strong>Status:</strong> Available</p>
+      <button>Request Pickup</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Together we reduce food waste</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    setupRoleNavbar();
+  </script>
+</body>
+</html>

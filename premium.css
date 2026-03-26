@@ -1,0 +1,205 @@
+:root {
+  --primary: #166534;
+  --primary-dark: #14532d;
+  --accent: #22c55e;
+  --accent-light: #dcfce7;
+  --text-dark: #1f2937;
+  --text-soft: #64748b;
+  --white: #ffffff;
+  --bg-soft: #f8fafc;
+  --border-soft: #e5e7eb;
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-strong: 0 12px 30px rgba(0, 0, 0, 0.14);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --transition: 0.3s ease;
+}
+
+/* Better section spacing */
+section {
+  position: relative;
+}
+
+/* Premium cards */
+.feature-card,
+.impact-card,
+.ngo-card,
+.food-card,
+.view-card,
+.chart-card,
+.dashboard-stat-card,
+.analytics-stat-card,
+.about-card,
+.team-card,
+.contact-card,
+.faq-card,
+.team-value-card,
+.summary-card,
+.map-stat-card,
+.map-main-card,
+.map-side-panel,
+.analytics-panel,
+.donate-info-card,
+.donate-form-card {
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-lg);
+  transition: var(--transition);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+}
+
+.feature-card:hover,
+.impact-card:hover,
+.ngo-card:hover,
+.food-card:hover,
+.view-card:hover,
+.chart-card:hover,
+.dashboard-stat-card:hover,
+.analytics-stat-card:hover,
+.about-card:hover,
+.team-card:hover,
+.contact-card:hover,
+.faq-card:hover,
+.team-value-card:hover,
+.summary-card:hover,
+.map-stat-card:hover,
+.analytics-panel:hover,
+.donate-info-card:hover,
+.donate-form-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-strong);
+}
+
+/* Better headings */
+h2, h3, h4 {
+  letter-spacing: -0.4px;
+}
+
+.page-hero h2,
+.features h2,
+.impact h2,
+.home-ngos h2,
+.why-choose-us h2,
+.dashboard-table h2,
+.analytics-panel h3,
+.chart-card h3,
+.about-flow h2,
+.team-values h2,
+.faq-section h2 {
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* Premium buttons */
+.btn {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 18px rgba(22, 101, 52, 0.2);
+  transition: var(--transition);
+}
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 22px rgba(22, 101, 52, 0.28);
+}
+
+.btn-outline {
+  border: 2px solid var(--white);
+  background: transparent;
+  color: var(--white);
+}
+
+.btn-outline:hover {
+  background: var(--white);
+  color: var(--primary);
+}
+
+/* Better nav feel */
+.navbar {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar ul li a {
+  position: relative;
+}
+
+.navbar ul li a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background: #facc15;
+  transition: var(--transition);
+}
+
+.navbar ul li a:hover::after,
+.navbar ul li a.active::after {
+  width: 100%;
+}
+
+/* Better forms */
+.modern-form input,
+.modern-form select,
+.modern-form textarea,
+.filter-section input,
+.filter-section select,
+.map-toolbar input,
+.view-list-top input,
+.advanced-toolbar input,
+.advanced-toolbar select {
+  border: 1px solid #d1d5db;
+  transition: var(--transition);
+}
+
+.modern-form input:focus,
+.modern-form select:focus,
+.modern-form textarea:focus,
+.filter-section input:focus,
+.filter-section select:focus,
+.map-toolbar input:focus,
+.view-list-top input:focus,
+.advanced-toolbar input:focus,
+.advanced-toolbar select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
+  outline: none;
+}
+
+/* Better section subtitles */
+.section-subtitle,
+.page-hero p,
+.chart-card p,
+.analytics-card-header p,
+.dashboard-chart-card p,
+.about-intro-card p,
+.team-intro-card p,
+.map-card-header p {
+  color: var(--text-soft);
+}
+
+/* Premium status pills */
+.status-pill,
+.food-badge,
+.status-badge {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Smooth image display */
+.hero-image img,
+.hero-image-card img {
+  box-shadow: var(--shadow-strong);
+  border-radius: var(--radius-lg);
+}
+
+/* Footer better visibility */
+footer {
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.12);
+}

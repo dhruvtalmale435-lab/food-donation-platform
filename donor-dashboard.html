@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Donor Dashboard - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="view-list.html">View List</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="donor-dashboard.html" class="active">Donor Dashboard</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="donor-hero">
+    <div class="donor-hero-left">
+      <span class="donor-tag">Donor Panel</span>
+      <h2>Welcome Back, Donor</h2>
+      <p>
+        Manage your food contributions, monitor donation impact, and stay updated
+        with your latest activity through one clean dashboard.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="donate.html" class="btn">Add Donation</a>
+        <a href="view-list.html" class="btn btn-outline">View All Donations</a>
+      </div>
+    </div>
+
+    <div class="donor-profile-card">
+      <div class="donor-avatar">D</div>
+      <h3 id="donorNameDisplay">Donor User</h3>
+      <p id="donorEmail">Not Available</p>
+      <div class="donor-profile-meta">
+        <span>Role: Donor</span>
+        <span>Status: Active</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="donor-stats-grid">
+    <div class="donor-stat-card">
+      <span>Total Donations</span>
+      <h3 id="donorTotalDonations">0</h3>
+      <p>Donation entries created by you</p>
+    </div>
+
+    <div class="donor-stat-card">
+      <span>Food Donated</span>
+      <h3 id="donorFoodDonated">0 kg</h3>
+      <p>Total quantity donated so far</p>
+    </div>
+
+    <div class="donor-stat-card">
+      <span>Pending</span>
+      <h3 id="donorPending">0</h3>
+      <p>Donations waiting for processing</p>
+    </div>
+
+    <div class="donor-stat-card">
+      <span>Completed</span>
+      <h3 id="donorCompleted">0</h3>
+      <p>Successfully completed donations</p>
+    </div>
+  </section>
+
+  <section class="donor-main-grid">
+    <div class="donor-panel-card">
+      <div class="panel-head">
+        <div>
+          <h2>Your Recent Donations</h2>
+          <p>Latest entries submitted from your side</p>
+        </div>
+      </div>
+
+      <div class="donor-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Food Type</th>
+              <th>Quantity</th>
+              <th>Area</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="donorTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="donor-panel-card">
+      <div class="panel-head">
+        <div>
+          <h2>Recent Activity</h2>
+          <p>Quick donor-side updates</p>
+        </div>
+      </div>
+
+      <div id="donorActivityTimeline" class="donor-timeline"></div>
+    </div>
+  </section>
+
+  <section class="donor-bottom-grid">
+    <div class="donor-panel-card">
+      <div class="panel-head">
+        <div>
+          <h2>Impact Progress</h2>
+          <p>Your donation contribution snapshot</p>
+        </div>
+      </div>
+
+      <div class="progress-block">
+        <div class="progress-row">
+          <span>Donation Completion</span>
+          <span id="completionPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div id="completionBar" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="progress-block">
+        <div class="progress-row">
+          <span>Food Contribution Level</span>
+          <span id="foodLevel">Starter</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="donor-panel-card donor-highlight-card">
+      <h2>Your Contribution Matters</h2>
+      <p>
+        Every donation you add helps reduce food waste and supports people in need.
+        Keep contributing to grow your impact across the city.
+      </p>
+      <a href="donate.html" class="btn">Donate More Food</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Donor Dashboard</p>
+  </footer>
+
+  <script>
+    function statusBadgeClass(status) {
+      const s = (status || "Pending").toLowerCase();
+      if (s === "completed") return "completed";
+      if (s === "accepted") return "accepted";
+      return "pending";
+    }
+
+    function loadDonorDashboard() {
+      const donations = JSON.parse(localStorage.getItem("donations")) || [];
+      const userEmail = localStorage.getItem("userEmail") || "Not Available";
+
+      document.getElementById("donorEmail").textContent = userEmail;
+
+      let totalQuantity = 0;
+      let pending = 0;
+      let completed = 0;
+
+      const donorTableBody = document.getElementById("donorTableBody");
+      const donorActivityTimeline = document.getElementById("donorActivityTimeline");
+
+      donorTableBody.innerHTML = "";
+      donorActivityTimeline.innerHTML = "";
+
+      donations.forEach((donation) => {
+        const quantity = parseInt(donation.quantity) || 0;
+        totalQuantity += quantity;
+
+        const status = donation.status || "Pending";
+        if (status === "Pending") pending++;
+        if (status === "Completed") completed++;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${donation.foodType || donation.food || "-"}</td>
+          <td>${donation.quantity || "-"}</td>
+          <td>${donation.area || "-"}</td>
+          <td><span class="status-pill ${statusBadgeClass(status)}">${status}</span></td>
+        `;
+        donorTableBody.appendChild(row);
+      });
+
+      const latestDonations = donations.slice().reverse().slice(0, 5);
+      if (latestDonations.length === 0) {
+        donorActivityTimeline.innerHTML = `
+          <div class="timeline-item">
+            <h4>No activity yet</h4>
+            <p>Your latest donor activity will appear here.</p>
+          </div>
+        `;
+      } else {
+        latestDonations.forEach((donation) => {
+          const item = document.createElement("div");
+          item.className = "timeline-item";
+          item.innerHTML = `
+            <h4>${donation.foodType || donation.food || "Food Donation"}</h4>
+            <p>${donation.quantity || "-"} • ${donation.area || "-"} • ${donation.status || "Pending"}</p>
+          `;
+          donorActivityTimeline.appendChild(item);
+        });
+      }
+
+      document.getElementById("donorTotalDonations").textContent = donations.length;
+      document.getElementById("donorFoodDonated").textContent = totalQuantity + " kg";
+      document.getElementById("donorPending").textContent = pending;
+      document.getElementById("donorCompleted").textContent = completed;
+
+      if (donations.length === 0) {
+        donorTableBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="empty-row">No donations submitted yet.</td>
+          </tr>
+        `;
+      }
+
+      const completionPercent = donations.length
+        ? Math.round((completed / donations.length) * 100)
+        : 0;
+
+      document.getElementById("completionPercent").textContent = completionPercent + "%";
+      document.getElementById("completionBar").style.width = completionPercent + "%";
+
+      let foodLevel = "Starter";
+      if (totalQuantity >= 100) foodLevel = "Impact Donor";
+      else if (totalQuantity >= 50) foodLevel = "Active Donor";
+      else if (totalQuantity >= 20) foodLevel = "Growing Donor";
+
+      document.getElementById("foodLevel").textContent = foodLevel;
+    }
+
+    loadDonorDashboard();
+  </script>
+  <script src="auth.js"></script>
+  <script>
+    protectPage(["donor"]);
+    setupRoleNavbar();
+  </script>
+
+</body>
+</html>

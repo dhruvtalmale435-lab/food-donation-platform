@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="view-list.html">View List</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="admin-dashboard.html" class="active">Admin Dashboard</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="admin-hero admin-wow-hero">
+    <div class="admin-hero-left">
+      <span class="admin-tag">Admin Command Center</span>
+      <h2>Platform Intelligence Dashboard</h2>
+      <p>
+        Monitor the complete donation ecosystem, track operational health,
+        manage platform activity, and maintain full visibility across donors,
+        NGOs, areas, and request statuses.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="view-list.html" class="btn">Open Donation Records</a>
+        <button class="btn btn-outline" onclick="clearAllPlatformData()">Reset Data</button>
+      </div>
+    </div>
+
+    <div class="admin-profile-card premium-admin-profile">
+      <div class="admin-avatar">A</div>
+      <h3>Platform Administrator</h3>
+      <p id="adminEmail">Not Available</p>
+
+      <div class="admin-profile-meta">
+        <span>Role: Admin</span>
+        <span>Authority: Full Access</span>
+        <span>Mode: Live Monitoring</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-stats-grid">
+    <div class="admin-stat-card premium-admin-stat">
+      <span>Total Donations</span>
+      <h3 id="adminTotalDonations">0</h3>
+      <p>All donation records across the platform</p>
+    </div>
+
+    <div class="admin-stat-card premium-admin-stat">
+      <span>Total Food Saved</span>
+      <h3 id="adminFoodSaved">0 kg</h3>
+      <p>Total quantity recorded in the system</p>
+    </div>
+
+    <div class="admin-stat-card premium-admin-stat">
+      <span>Pending Requests</span>
+      <h3 id="adminPending">0</h3>
+      <p>Waiting for receiver-side action</p>
+    </div>
+
+    <div class="admin-stat-card premium-admin-stat">
+      <span>Accepted Requests</span>
+      <h3 id="adminAccepted">0</h3>
+      <p>Confirmed by receiver / NGO</p>
+    </div>
+
+    <div class="admin-stat-card premium-admin-stat">
+      <span>Completed Requests</span>
+      <h3 id="adminCompleted">0</h3>
+      <p>Requests fully closed and completed</p>
+    </div>
+
+    <div class="admin-stat-card premium-admin-stat">
+      <span>Coverage Areas</span>
+      <h3 id="adminAreas">0</h3>
+      <p>Unique active donation locations</p>
+    </div>
+  </section>
+
+  <section class="admin-main-grid">
+    <div class="admin-panel-card premium-admin-panel">
+      <div class="panel-head">
+        <div>
+          <h2>All Platform Donations</h2>
+          <p>Master table with donation flow and current status</p>
+        </div>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Donor</th>
+              <th>Food Type</th>
+              <th>Quantity</th>
+              <th>Area</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="admin-panel-card premium-admin-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Platform Activity</h2>
+          <p>Recent actions across the complete system</p>
+        </div>
+      </div>
+
+      <div id="adminActivityTimeline" class="admin-timeline"></div>
+    </div>
+  </section>
+
+  <section class="admin-bottom-grid">
+    <div class="admin-panel-card premium-admin-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Platform Health</h2>
+          <p>Operational summary for admin-side monitoring</p>
+        </div>
+      </div>
+
+      <div class="admin-health-grid">
+        <div class="admin-health-item">
+          <h4>Donation Flow Speed</h4>
+          <p id="flowSpeedText">Stable</p>
+        </div>
+
+        <div class="admin-health-item">
+          <h4>NGO Response Quality</h4>
+          <p id="responseQualityText">Moderate</p>
+        </div>
+
+        <div class="admin-health-item">
+          <h4>Area Activity Level</h4>
+          <p id="areaActivityText">Low</p>
+        </div>
+
+        <div class="admin-health-item">
+          <h4>System Status</h4>
+          <p>Healthy</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel-card admin-highlight-card premium-admin-highlight">
+      <h2>Admin Overview</h2>
+      <p>
+        This panel acts as the platform brain. It gives a complete high-level
+        view of donations, flow efficiency, zone activity, and platform stability.
+      </p>
+      <div class="hero-buttons">
+        <button class="btn" onclick="clearAllPlatformData()">Reset Platform</button>
+        <a href="analytics.html" class="btn btn-outline">Open Analytics</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Admin Control Center</p>
+  </footer>
+
+  <script>
+  function adminStatusClass(status) {
+    const s = (status || "Pending").toLowerCase();
+    if (s === "completed") return "completed";
+    if (s === "accepted") return "accepted";
+    return "pending";
+  }
+
+  function clearAllPlatformData() {
+    localStorage.removeItem("donations");
+    loadAdminDashboard();
+  }
+
+  function loadAdminDashboard() {
+    const donations = JSON.parse(localStorage.getItem("donations")) || [];
+    const userEmail = localStorage.getItem("userEmail") || "Not Available";
+    document.getElementById("adminEmail").textContent = userEmail;
+
+    const adminTableBody = document.getElementById("adminTableBody");
+    const adminActivityTimeline = document.getElementById("adminActivityTimeline");
+
+    adminTableBody.innerHTML = "";
+    adminActivityTimeline.innerHTML = "";
+
+    let totalQuantity = 0;
+    let pending = 0;
+    let accepted = 0;
+    let completed = 0;
+    const areas = new Set();
+
+    donations.forEach((donation) => {
+      const qty = parseInt(donation.quantity) || 0;
+      totalQuantity += qty;
+
+      const status = donation.status || "Pending";
+      const area = donation.area || "-";
+      if (area !== "-") areas.add(area);
+
+      if (status === "Pending") pending++;
+      if (status === "Accepted") accepted++;
+      if (status === "Completed") completed++;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${donation.donorName || "Anonymous Donor"}</td>
+        <td>${donation.foodType || "-"}</td>
+        <td>${donation.quantity || "-"}</td>
+        <td>${area}</td>
+        <td><span class="status-pill ${adminStatusClass(status)}">${status}</span></td>
+      `;
+      adminTableBody.appendChild(row);
+    });
+
+    const latest = donations.slice().reverse().slice(0, 6);
+    if (latest.length === 0) {
+      adminActivityTimeline.innerHTML = `
+        <div class="admin-timeline-item">
+          <h4>No admin activity yet</h4>
+          <p>System-wide updates will appear here once donations are added.</p>
+        </div>
+      `;
+    } else {
+      latest.forEach((donation) => {
+        const item = document.createElement("div");
+        item.className = "admin-timeline-item";
+        item.innerHTML = `
+          <h4>${donation.foodType || "Food Donation"}</h4>
+          <p>${donation.donorName || "Anonymous"} • ${donation.area || "-"} • ${donation.status || "Pending"}</p>
+        `;
+        adminActivityTimeline.appendChild(item);
+      });
+    }
+
+    document.getElementById("adminTotalDonations").textContent = donations.length;
+    document.getElementById("adminFoodSaved").textContent = totalQuantity + " kg";
+    document.getElementById("adminPending").textContent = pending;
+    document.getElementById("adminAccepted").textContent = accepted;
+    document.getElementById("adminCompleted").textContent = completed;
+    document.getElementById("adminAreas").textContent = areas.size;
+
+    if (donations.length === 0) {
+      adminTableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty-row">No platform donation data available.</td>
+        </tr>
+      `;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadAdminDashboard);
+</script>
+  <script src="auth.js"></script>
+  <script>
+    protectPage(["admin"]);
+    setupRoleNavbar();
+  </script>
+
+</body>
+</html>

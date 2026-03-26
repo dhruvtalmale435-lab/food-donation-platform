@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="donate.html">Donate</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="dashboard.html" class="active">Dashboard</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero dashboard-hero">
+    <h2>Dashboard Overview</h2>
+    <p>Track donations, NGO activity, food status, and overall platform impact.</p>
+  </section>
+
+  <section class="dashboard-stats">
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Total Donations</span>
+      <h3>48</h3>
+      <p>All food donation entries submitted</p>
+    </div>
+
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Connected NGOs</span>
+      <h3>18</h3>
+      <p>Partner NGOs active on the platform</p>
+    </div>
+
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Pending Pickups</span>
+      <h3>12</h3>
+      <p>Food items waiting for collection</p>
+    </div>
+
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Meals Served</span>
+      <h3>320</h3>
+      <p>Estimated meals delivered to people</p>
+    </div>
+  </section>
+
+  <section class="dashboard-main">
+    <div class="dashboard-chart-card">
+      <div class="card-header-row">
+        <div>
+          <h2>Donation Activity</h2>
+          <p>Weekly trend of donations received</p>
+        </div>
+      </div>
+      <canvas id="donationChart"></canvas>
+    </div>
+
+    <div class="dashboard-side-card">
+      <h2>Top NGO Partners</h2>
+      <div class="ngo-mini-list">
+        <div class="ngo-mini-item">
+          <h4>Robin Hood Army Pune</h4>
+          <p>Shivajinagar • 14 pickups</p>
+        </div>
+        <div class="ngo-mini-item">
+          <h4>Feeding Hands Foundation</h4>
+          <p>Kothrud • 11 pickups</p>
+        </div>
+        <div class="ngo-mini-item">
+          <h4>Hope Meal Support</h4>
+          <p>Viman Nagar • 9 pickups</p>
+        </div>
+        <div class="ngo-mini-item">
+          <h4>Annadaan Welfare Group</h4>
+          <p>Hadapsar • 7 pickups</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-table">
+    <h2>Recent Activity</h2>
+    <table>
+      <tr>
+        <th>Donor</th>
+        <th>Food Type</th>
+        <th>Quantity</th>
+        <th>Area</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>ABC Hostel</td>
+        <td>Rice & Curry</td>
+        <td>15 Plates</td>
+        <td>Shivajinagar</td>
+        <td><span class="status-badge collected">Collected</span></td>
+      </tr>
+      <tr>
+        <td>City Restaurant</td>
+        <td>Packaged Meals</td>
+        <td>20 Boxes</td>
+        <td>Kothrud</td>
+        <td><span class="status-badge pending">Pending</span></td>
+      </tr>
+      <tr>
+        <td>Food Corner</td>
+        <td>Bread & Snacks</td>
+        <td>10 Packets</td>
+        <td>Hadapsar</td>
+        <td><span class="status-badge assigned">Assigned</span></td>
+      </tr>
+      <tr>
+        <td>Sunrise Mess</td>
+        <td>Chapati & Sabzi</td>
+        <td>18 Plates</td>
+        <td>Viman Nagar</td>
+        <td><span class="status-badge collected">Collected</span></td>
+      </tr>
+    </table>
+  </section>
+
+  <section class="dashboard-extra">
+    <div class="dashboard-extra-card">
+      <h2>Platform Highlights</h2>
+      <ul>
+        <li>Fast matching between donors and NGOs</li>
+        <li>Simple food listing and tracking flow</li>
+        <li>Area-wise donation visibility</li>
+        <li>Better monitoring through dashboard insights</li>
+      </ul>
+    </div>
+
+    <div class="dashboard-extra-card">
+      <h2>Quick Summary</h2>
+      <p>
+        The platform is actively supporting food redistribution by connecting donors,
+        NGOs, and available food listings through a clean and easy-to-use interface.
+      </p>
+      <a href="food.html" class="btn">View Food Listings</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Dashboard Insights</p>
+  </footer>
+
+  <script>
+    const ctx = document.getElementById("donationChart");
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [{
+          label: "Donations",
+          data: [5, 7, 6, 8, 10, 7, 5],
+          backgroundColor: [
+            "#166534",
+            "#15803d",
+            "#16a34a",
+            "#22c55e",
+            "#4ade80",
+            "#86efac",
+            "#bbf7d0"
+          ],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
