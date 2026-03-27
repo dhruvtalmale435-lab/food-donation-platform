@@ -102,7 +102,6 @@
     }
 
     async function loadMap() {
-      // Clear old markers
       markers.forEach(m => map.removeLayer(m));
       markers = [];
 
@@ -115,14 +114,19 @@
         .not("latitude", "is", null)
         .order("id", { ascending: false });
 
-      if (error) {
-        listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+      if (error) { listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`; return; }
+
+      if (!donations || donations.length === 0) {
+        listEl.innerHTML = `<p style="color:#888;">No donations with location data yet.</p>`;
         return;
       }
 
-      if (!donations || donations.length === 0) {
-        listEl.innerHTML = `<p style="color:#888;">No donations with location data yet. Location is captured when donor submits a donation.</p>`;
-        return;
+      // Fetch donor profiles for logos
+      const userIds = [...new Set(donations.map(d => d.user_id).filter(Boolean))];
+      let profileMap = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await db.from("profiles").select("id,name,avatar_url").in("id", userIds);
+        if (profiles) profiles.forEach(p => { profileMap[p.id] = p; });
       }
 
       listEl.innerHTML = "";
@@ -133,12 +137,32 @@
         if (isNaN(lat) || isNaN(lng)) return;
 
         const status = d.status || "Pending";
-        const marker = L.marker([lat, lng], { icon: createMarkerIcon(status) })
+        const profile = profileMap[d.user_id];
+        const avatarUrl = profile?.avatar_url;
+        const donorName = profile?.name || d.donorName || "Anonymous";
+        const letter = donorName[0].toUpperCase();
+
+        // Custom marker with donor logo
+        const markerHtml = avatarUrl
+          ? `<div style="width:36px;height:36px;border-radius:50%;border:3px solid ${getMarkerColor(status)};overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;"/></div>`
+          : `<div style="width:36px;height:36px;border-radius:50%;background:${getMarkerColor(status)};border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">${letter}</div>`;
+
+        const icon = L.divIcon({ className:"", html: markerHtml, iconSize:[36,36], iconAnchor:[18,18] });
+
+        const marker = L.marker([lat, lng], { icon })
           .addTo(map)
           .bindPopup(`
-            <div style="min-width:180px;">
-              <strong style="color:#14532d;font-size:15px;">${d.foodType || "Food Donation"}</strong><br/>
-              <span style="font-size:12px;color:#64748b;">by ${d.donorName || "Anonymous"}</span><br/><br/>
+            <div style="min-width:200px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                ${avatarUrl
+                  ? `<img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${getMarkerColor(status)};" />`
+                  : `<div style="width:40px;height:40px;border-radius:50%;background:${getMarkerColor(status)};display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px;">${letter}</div>`
+                }
+                <div>
+                  <strong style="color:#14532d;font-size:14px;">${d.foodType || "Food Donation"}</strong><br/>
+                  <span style="font-size:12px;color:#64748b;">by ${donorName}</span>
+                </div>
+              </div>
               <b>Qty:</b> ${d.quantity || "-"}<br/>
               <b>Area:</b> ${d.area || "-"}<br/>
               <b>Address:</b> ${d.pickupAddress || "-"}<br/>
@@ -148,24 +172,28 @@
 
         markers.push(marker);
 
-        // Card below map
+        // Card below map with donor logo
         const card = document.createElement("div");
         card.className = "map-donation-card";
         card.innerHTML = `
-          <h4>${d.foodType || "Food Donation"}</h4>
-          <p><strong>Donor:</strong> ${d.donorName || "Anonymous"}</p>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            ${avatarUrl
+              ? `<img src="${avatarUrl}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid ${getMarkerColor(status)};flex-shrink:0;"/>`
+              : `<div style="width:42px;height:42px;border-radius:50%;background:${getMarkerColor(status)};display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px;flex-shrink:0;">${letter}</div>`
+            }
+            <div>
+              <h4 style="margin:0;color:#14532d;">${d.foodType || "Food Donation"}</h4>
+              <p style="margin:2px 0;font-size:12px;color:#64748b;">by ${donorName}</p>
+            </div>
+          </div>
           <p><strong>Area:</strong> ${d.area || "-"}</p>
           <p><strong>Qty:</strong> ${d.quantity || "-"}</p>
           <p><strong>Status:</strong> <span style="color:${getMarkerColor(status)};font-weight:700;">${status}</span></p>
         `;
-        card.onclick = () => {
-          map.setView([lat, lng], 15);
-          marker.openPopup();
-        };
+        card.onclick = () => { map.setView([lat, lng], 15); marker.openPopup(); };
         listEl.appendChild(card);
       });
 
-      // Fit map to all markers
       if (markers.length > 0) {
         const group = L.featureGroup(markers);
         map.fitBounds(group.getBounds().pad(0.2));
