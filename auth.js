@@ -59,11 +59,23 @@ function setupRoleNavbar() {
   if (role === "ngo" && ngoLink) ngoLink.style.display = "inline-block";
   if (role === "admin" && adminLink) adminLink.style.display = "inline-block";
 
-  // Show Profile and Live Map for all logged-in users
-  const profileLink = document.getElementById("navProfile");
-  const liveMapLink = document.getElementById("navLiveMap");
-  if (profileLink) profileLink.style.display = "inline-block";
-  if (liveMapLink) liveMapLink.style.display = "inline-block";
+  // Add profile link dynamically if not present
+  const existingProfile = document.getElementById("navProfile");
+  if (!existingProfile) {
+    const profileLi = document.createElement("li");
+    profileLi.id = "navProfile";
+    profileLi.innerHTML = `<a href="profile.html">👤 Profile</a>`;
+    logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
+  }
+
+  // Add Live Map link dynamically if not present
+  const existingMap = document.getElementById("navLiveMap");
+  if (!existingMap) {
+    const mapLi = document.createElement("li");
+    mapLi.id = "navLiveMap";
+    mapLi.innerHTML = `<a href="live-tracking.html">📍 Live Map</a>`;
+    logoutLink.parentElement.parentElement.insertBefore(mapLi, logoutLink.parentElement);
+  }
 
   // Hide Available Food and Donate links for admin
   if (role === "admin") {
