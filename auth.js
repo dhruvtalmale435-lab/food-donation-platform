@@ -67,6 +67,15 @@ function setupRoleNavbar() {
     logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
   }
 
+  // Add Live Map link dynamically if not present
+  const existingMap = document.getElementById("navLiveMap");
+  if (!existingMap) {
+    const mapLi = document.createElement("li");
+    mapLi.id = "navLiveMap";
+    mapLi.innerHTML = `<a href="live-tracking.html">📍 Live Map</a>`;
+    logoutLink.parentElement.parentElement.insertBefore(mapLi, logoutLink.parentElement);
+  }
+
   // Hide Available Food and Donate links for admin
   if (role === "admin") {
     document.querySelectorAll("a[href='food.html'], a[href='donate.html']").forEach(el => {

@@ -229,7 +229,6 @@
     }
 
     function captureFormData() {
-      // Save all form values into a variable BEFORE modal opens
       savedFormData = {
         donorName: document.getElementById("donorName").value.trim() || "Anonymous",
         contactNumber: document.getElementById("contactNumber").value.trim(),
@@ -242,8 +241,21 @@
         notes: document.getElementById("notes").value.trim(),
         status: "Pending",
         user_id: localStorage.getItem("userId") || null,
-        donorEmail: localStorage.getItem("userEmail") || ""
+        donorEmail: localStorage.getItem("userEmail") || "",
+        latitude: null,
+        longitude: null
       };
+
+      // Try to get GPS location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            savedFormData.latitude = pos.coords.latitude;
+            savedFormData.longitude = pos.coords.longitude;
+          },
+          () => {} // silently fail if denied
+        );
+      }
     }
 
     function sendOTP() {
@@ -336,7 +348,24 @@
       submitBtn.textContent = "Submitting...";
       submitBtn.disabled = true;
 
-      const { error } = await db.from("donation").insert([savedFormData]);
+      const donation = {
+        donorName: savedFormData.donorName,
+        contactNumber: savedFormData.contactNumber,
+        foodType: savedFormData.foodType,
+        quantity: savedFormData.quantity,
+        expiryTime: savedFormData.expiryTime,
+        pickupAddress: savedFormData.pickupAddress,
+        area: savedFormData.area,
+        ngoSelect: savedFormData.ngoSelect,
+        notes: savedFormData.notes,
+        status: "Pending",
+        user_id: savedFormData.user_id,
+        donorEmail: savedFormData.donorEmail,
+        latitude: savedFormData.latitude || null,
+        longitude: savedFormData.longitude || null
+      };
+
+      const { error } = await db.from("donation").insert([donation]);
 
       submitBtn.textContent = "Submit Donation";
       submitBtn.disabled = false;

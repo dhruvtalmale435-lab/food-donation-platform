@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Tracking - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map { width: 100%; height: 520px; border-radius: 16px; z-index: 1; }
+    .map-page { padding: 30px 40px 50px; }
+    .map-page h2 { color: #14532d; margin-bottom: 6px; }
+    .map-page p { color: #64748b; margin-bottom: 20px; }
+    .map-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; font-size: 14px; color: #475569; }
+    .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+    .dot-pending { background: #f59e0b; }
+    .dot-accepted { background: #3b82f6; }
+    .dot-completed { background: #22c55e; }
+    .donation-list-map { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 16px; }
+    .map-donation-card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; cursor: pointer; transition: 0.2s; }
+    .map-donation-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+    .map-donation-card h4 { color: #14532d; margin-bottom: 6px; }
+    .map-donation-card p { color: #64748b; font-size: 13px; margin: 3px 0; }
+    .no-location { color: #94a3b8; font-size: 12px; font-style: italic; }
+    .refresh-btn { margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="map-page">
+    <h2>📍 Live Donation Tracking Map</h2>
+    <p>Real-time map showing all active donation pickup locations.</p>
+
+    <div class="map-legend">
+      <span><span class="legend-dot dot-pending"></span>Pending</span>
+      <span><span class="legend-dot dot-accepted"></span>Accepted</span>
+      <span><span class="legend-dot dot-completed"></span>Completed</span>
+    </div>
+
+    <button class="btn refresh-btn" onclick="loadMap()">🔄 Refresh Map</button>
+
+    <div id="map"></div>
+
+    <div class="donation-list-map" id="donationListMap"></div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Live Tracking</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    setupRoleNavbar();
+
+    // Init map centered on Pune
+    const map = L.map("map").setView([18.5204, 73.8567], 12);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(map);
+
+    let markers = [];
+
+    function getMarkerColor(status) {
+      if (status === "Accepted") return "#3b82f6";
+      if (status === "Completed") return "#22c55e";
+      return "#f59e0b";
+    }
+
+    function createMarkerIcon(status) {
+      const color = getMarkerColor(status);
+      return L.divIcon({
+        className: "",
+        html: `<div style="
+          width:16px;height:16px;border-radius:50%;
+          background:${color};border:3px solid white;
+          box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+        </div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+    }
+
+    async function loadMap() {
+      // Clear old markers
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      const listEl = document.getElementById("donationListMap");
+      listEl.innerHTML = "<p style='color:#888;'>Loading...</p>";
+
+      const { data: donations, error } = await db
+        .from("donation")
+        .select("*")
+        .not("latitude", "is", null)
+        .order("id", { ascending: false });
+
+      if (error) {
+        listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+        return;
+      }
+
+      if (!donations || donations.length === 0) {
+        listEl.innerHTML = `<p style="color:#888;">No donations with location data yet. Location is captured when donor submits a donation.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = "";
+
+      donations.forEach(d => {
+        const lat = parseFloat(d.latitude);
+        const lng = parseFloat(d.longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const status = d.status || "Pending";
+        const marker = L.marker([lat, lng], { icon: createMarkerIcon(status) })
+          .addTo(map)
+          .bindPopup(`
+            <div style="min-width:180px;">
+              <strong style="color:#14532d;font-size:15px;">${d.foodType || "Food Donation"}</strong><br/>
+              <span style="font-size:12px;color:#64748b;">by ${d.donorName || "Anonymous"}</span><br/><br/>
+              <b>Qty:</b> ${d.quantity || "-"}<br/>
+              <b>Area:</b> ${d.area || "-"}<br/>
+              <b>Address:</b> ${d.pickupAddress || "-"}<br/>
+              <b>Status:</b> <span style="color:${getMarkerColor(status)};font-weight:700;">${status}</span>
+            </div>
+          `);
+
+        markers.push(marker);
+
+        // Card below map
+        const card = document.createElement("div");
+        card.className = "map-donation-card";
+        card.innerHTML = `
+          <h4>${d.foodType || "Food Donation"}</h4>
+          <p><strong>Donor:</strong> ${d.donorName || "Anonymous"}</p>
+          <p><strong>Area:</strong> ${d.area || "-"}</p>
+          <p><strong>Qty:</strong> ${d.quantity || "-"}</p>
+          <p><strong>Status:</strong> <span style="color:${getMarkerColor(status)};font-weight:700;">${status}</span></p>
+        `;
+        card.onclick = () => {
+          map.setView([lat, lng], 15);
+          marker.openPopup();
+        };
+        listEl.appendChild(card);
+      });
+
+      // Fit map to all markers
+      if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.2));
+      }
+    }
+
+    // Real-time updates
+    db.channel("map-donations")
+      .on("postgres_changes", { event: "*", schema: "public", table: "donation" }, () => {
+        loadMap();
+      })
+      .subscribe();
+
+    loadMap();
+  </script>
+
+</body>
+</html>
