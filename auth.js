@@ -59,18 +59,20 @@ function setupRoleNavbar() {
   if (role === "ngo" && ngoLink) ngoLink.style.display = "inline-block";
   if (role === "admin" && adminLink) adminLink.style.display = "inline-block";
 
-  // Add profile link dynamically if not present
-  const existingProfile = document.getElementById("navProfile");
-  if (!existingProfile) {
+  // Show Profile and Live Map for all logged-in users
+  const profileLink = document.getElementById("navProfile");
+  const liveMapLink = document.getElementById("navLiveMap");
+  if (profileLink) profileLink.style.display = "inline-block";
+  if (liveMapLink) liveMapLink.style.display = "inline-block";
+
+  // Inject dynamically if not in HTML (for pages that don't have them)
+  if (!profileLink) {
     const profileLi = document.createElement("li");
     profileLi.id = "navProfile";
     profileLi.innerHTML = '<a href="profile.html">👤 Profile</a>';
     logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
   }
-
-  // Add Live Map link dynamically if not present
-  const existingMap = document.getElementById("navLiveMap");
-  if (!existingMap) {
+  if (!liveMapLink) {
     const mapLi = document.createElement("li");
     mapLi.id = "navLiveMap";
     mapLi.innerHTML = '<a href="live-tracking.html">📍 Live Map</a>';
