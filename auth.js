@@ -28,6 +28,7 @@ function protectPage(allowedRoles) {
     if (role === "donor") window.location.href = "donor-dashboard.html";
     else if (role === "ngo") window.location.href = "ngo-dashboard.html";
     else if (role === "admin") window.location.href = "admin-dashboard.html";
+    else if (role === "community") window.location.href = "community-dashboard.html";
     else window.location.href = "login.html";
   }
 }

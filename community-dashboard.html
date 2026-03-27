@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Community Dashboard - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .comm-hero { display:grid; grid-template-columns:2fr 1fr; gap:24px; padding:40px; background:linear-gradient(135deg,#f5f3ff,#ede9fe); align-items:center; }
+    .comm-hero-left { background:linear-gradient(135deg,#7c3aed,#5b21b6); color:white; padding:34px; border-radius:24px; }
+    .comm-tag { display:inline-block; background:rgba(255,255,255,0.14); color:white; padding:8px 14px; border-radius:999px; font-size:14px; font-weight:700; margin-bottom:16px; }
+    .comm-hero-left h2 { font-size:36px; color:white; margin-bottom:12px; }
+    .comm-hero-left p { color:#ede9fe; line-height:1.8; margin-bottom:20px; }
+    .comm-profile-card { background:white; border-radius:24px; padding:28px; box-shadow:0 14px 30px rgba(0,0,0,0.10); text-align:center; border:1px solid #ddd6fe; }
+    .comm-avatar { width:80px; height:80px; margin:0 auto 14px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#a78bfa); color:white; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800; }
+    .comm-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; padding:28px 40px 10px; }
+    .comm-stat { background:white; border-radius:16px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,0.07); border:1px solid #ede9fe; }
+    .comm-stat span { font-size:13px; color:#64748b; font-weight:700; display:block; margin-bottom:8px; }
+    .comm-stat h3 { font-size:32px; color:#7c3aed; margin-bottom:6px; }
+    .comm-stat p { font-size:13px; color:#94a3b8; margin:0; }
+    .comm-main { padding:30px 40px; }
+    .comm-panel { background:white; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,0.08); border:1px solid #ede9fe; margin-bottom:24px; }
+    .comm-panel h2 { color:#5b21b6; margin-bottom:6px; }
+    .comm-panel p { color:#64748b; margin-bottom:18px; }
+    .food-request-card { background:linear-gradient(180deg,#fff,#faf5ff); border:1px solid #ddd6fe; border-radius:16px; padding:18px; margin-bottom:14px; }
+    .food-request-card h4 { color:#5b21b6; margin-bottom:6px; }
+    .food-request-card p { color:#475569; font-size:14px; margin:4px 0; }
+    .request-status { display:inline-block; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700; }
+    .req-pending { background:#fef3c7; color:#92400e; }
+    .req-approved { background:#dcfce7; color:#166534; }
+    .req-rejected { background:#fee2e2; color:#991b1b; }
+    .restriction-box { background:#fef3c7; border:1px solid #fcd34d; border-radius:12px; padding:14px; margin-bottom:20px; font-size:13px; color:#92400e; }
+    .location-btn { background:#7c3aed; }
+    @media(max-width:900px){ .comm-hero{ grid-template-columns:1fr; } .comm-stats,.comm-main{ padding-left:20px; padding-right:20px; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="comm-hero">
+    <div class="comm-hero-left">
+      <span class="comm-tag">👥 Community Receiver Panel</span>
+      <h2>Welcome, <span id="commName">Community Member</span></h2>
+      <p>Browse available food donations and submit requests. Each request needs admin approval before you can collect food.</p>
+      <div class="hero-buttons">
+        <a href="food.html" class="btn" style="background:white;color:#7c3aed;">Browse Food</a>
+      </div>
+    </div>
+    <div class="comm-profile-card">
+      <div class="comm-avatar" id="commAvatar">👥</div>
+      <h3 id="commNameCard">Community Member</h3>
+      <p id="commEmail" style="color:#64748b;margin-bottom:12px;">-</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <span style="background:#f5f3ff;border:1px solid #ddd6fe;padding:8px 12px;border-radius:10px;color:#5b21b6;font-weight:600;font-size:13px;">Role: Community Receiver</span>
+        <span style="background:#f5f3ff;border:1px solid #ddd6fe;padding:8px 12px;border-radius:10px;color:#5b21b6;font-weight:600;font-size:13px;" id="commVerifiedBadge">⏳ Pending Verification</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="comm-stats">
+    <div class="comm-stat">
+      <span>Total Requests</span>
+      <h3 id="totalRequests">0</h3>
+      <p>Food requests submitted</p>
+    </div>
+    <div class="comm-stat">
+      <span>Approved</span>
+      <h3 id="approvedRequests">0</h3>
+      <p>Requests approved by admin</p>
+    </div>
+    <div class="comm-stat">
+      <span>Pending</span>
+      <h3 id="pendingRequests">0</h3>
+      <p>Awaiting admin approval</p>
+    </div>
+    <div class="comm-stat">
+      <span>Completed</span>
+      <h3 id="completedRequests">0</h3>
+      <p>Successfully collected</p>
+    </div>
+  </section>
+
+  <section class="comm-main">
+
+    <div class="restriction-box">
+      ⚠️ <strong>Community Receiver Restrictions:</strong> You cannot accept food directly. You must submit a request for each donation. Admin will review and approve. Live location is required when collecting food.
+    </div>
+
+    <div class="comm-panel">
+      <h2>📋 Available Food — Request to Collect</h2>
+      <p>Browse pending donations and submit a request. Admin will approve before you can collect.</p>
+      <div id="availableFoodList"></div>
+    </div>
+
+    <div class="comm-panel">
+      <h2>📬 My Requests</h2>
+      <p>Track the status of your food collection requests.</p>
+      <div id="myRequestsList"></div>
+    </div>
+
+  </section>
+
+  <!-- Location + Request Modal -->
+  <div id="requestModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:white;border-radius:20px;padding:32px;max-width:400px;width:90%;text-align:center;">
+      <h3 style="color:#5b21b6;margin-bottom:10px;">📍 Share Your Location</h3>
+      <p style="color:#64748b;font-size:14px;margin-bottom:20px;">Your live location is required to submit a food request. This helps admin verify you are near the pickup point.</p>
+      <button class="btn location-btn" id="shareLocationBtn" onclick="captureLocationAndRequest()">📍 Share Location & Submit Request</button>
+      <br/><br/>
+      <button class="btn btn-outline" onclick="closeRequestModal()">Cancel</button>
+      <p id="locationMsg" style="margin-top:12px;font-size:13px;min-height:18px;"></p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Community Receiver Dashboard</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    protectPage(["community"]);
+    setupRoleNavbar();
+
+    const userId = localStorage.getItem("userId");
+    const userEmail = localStorage.getItem("userEmail") || "-";
+    const userName = localStorage.getItem("userName") || userEmail.split("@")[0];
+
+    document.getElementById("commName").textContent = userName;
+    document.getElementById("commNameCard").textContent = userName;
+    document.getElementById("commEmail").textContent = userEmail;
+
+    let pendingDonationId = null;
+
+    async function loadDashboard() {
+      // Load profile
+      const { data: profile } = await db.from("profiles").select("*").eq("id", userId).single();
+      if (profile) {
+        if (profile.avatar_url) {
+          document.getElementById("commAvatar").innerHTML = `<img src="${profile.avatar_url}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;"/>`;
+        }
+        document.getElementById("commVerifiedBadge").textContent = profile.verified ? "✅ Verified" : "⏳ Pending Verification";
+      }
+
+      // Load available food
+      const { data: donations } = await db.from("donation").select("*").eq("status","Pending").order("id",{ascending:false});
+      const foodList = document.getElementById("availableFoodList");
+      foodList.innerHTML = "";
+      if (!donations || donations.length === 0) {
+        foodList.innerHTML = `<p style="color:#94a3b8;">No food available right now. Check back soon.</p>`;
+      } else {
+        donations.forEach(d => {
+          const card = document.createElement("div");
+          card.className = "food-request-card";
+          card.innerHTML = `
+            <h4>${d.foodType || "Food Donation"}</h4>
+            <p><strong>Donor:</strong> ${d.donorName || "Anonymous"}</p>
+            <p><strong>Quantity:</strong> ${d.quantity || "-"}</p>
+            <p><strong>Area:</strong> ${d.area || "-"}</p>
+            <p><strong>Expiry:</strong> ${d.expiryTime || "-"}</p>
+            <p><strong>Address:</strong> ${d.pickupAddress || "-"}</p>
+            <button class="btn" style="margin-top:10px;background:#7c3aed;padding:8px 18px;font-size:13px;" onclick="openRequestModal(${d.id})">📬 Request This Food</button>
+          `;
+          foodList.appendChild(card);
+        });
+      }
+
+      // Load my requests
+      const { data: requests } = await db.from("community_requests").select("*,donation(foodType,quantity,area)").eq("user_id",userId).order("id",{ascending:false});
+      const reqList = document.getElementById("myRequestsList");
+      reqList.innerHTML = "";
+
+      let total=0, approved=0, pending=0, completed=0;
+      if (!requests || requests.length === 0) {
+        reqList.innerHTML = `<p style="color:#94a3b8;">No requests submitted yet.</p>`;
+      } else {
+        requests.forEach(r => {
+          total++;
+          if (r.status === "Approved") approved++;
+          else if (r.status === "Pending") pending++;
+          else if (r.status === "Completed") completed++;
+
+          const statusClass = r.status === "Approved" ? "req-approved" : r.status === "Rejected" ? "req-rejected" : "req-pending";
+          const card = document.createElement("div");
+          card.className = "food-request-card";
+          card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <h4>${r.donation?.foodType || "Food Request"}</h4>
+              <span class="request-status ${statusClass}">${r.status}</span>
+            </div>
+            <p><strong>Qty:</strong> ${r.donation?.quantity || "-"} &nbsp;|&nbsp; <strong>Area:</strong> ${r.donation?.area || "-"}</p>
+            <p><strong>Requested:</strong> ${new Date(r.created_at).toLocaleDateString("en-IN")}</p>
+            ${r.status === "Approved" ? `<p style="color:#166534;font-size:13px;font-weight:700;">✅ Approved! You can now collect this food.</p>` : ""}
+            ${r.status === "Rejected" ? `<p style="color:#991b1b;font-size:13px;">❌ Rejected by admin. Reason: ${r.reject_reason || "Not specified"}</p>` : ""}
+          `;
+          reqList.appendChild(card);
+        });
+      }
+
+      document.getElementById("totalRequests").textContent = total;
+      document.getElementById("approvedRequests").textContent = approved;
+      document.getElementById("pendingRequests").textContent = pending;
+      document.getElementById("completedRequests").textContent = completed;
+    }
+
+    function openRequestModal(donationId) {
+      pendingDonationId = donationId;
+      document.getElementById("requestModal").style.display = "flex";
+      document.getElementById("locationMsg").textContent = "";
+    }
+
+    function closeRequestModal() {
+      document.getElementById("requestModal").style.display = "none";
+      pendingDonationId = null;
+    }
+
+    async function captureLocationAndRequest() {
+      const btn = document.getElementById("shareLocationBtn");
+      const msg = document.getElementById("locationMsg");
+      btn.textContent = "Getting location...";
+      btn.disabled = true;
+
+      if (!navigator.geolocation) {
+        msg.style.color = "red";
+        msg.textContent = "❌ Geolocation not supported by your browser.";
+        btn.textContent = "📍 Share Location & Submit Request";
+        btn.disabled = false;
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const { error } = await db.from("community_requests").insert([{
+          user_id: userId,
+          donation_id: pendingDonationId,
+          requester_name: userName,
+          requester_email: userEmail,
+          latitude: lat,
+          longitude: lng,
+          status: "Pending"
+        }]);
+
+        btn.textContent = "📍 Share Location & Submit Request";
+        btn.disabled = false;
+
+        if (error) {
+          msg.style.color = "red";
+          msg.textContent = "❌ Failed: " + error.message;
+          return;
+        }
+
+        closeRequestModal();
+        alert("✅ Request submitted! Admin will review and approve shortly.");
+        loadDashboard();
+
+      }, (err) => {
+        msg.style.color = "red";
+        msg.textContent = "❌ Location access denied. Please allow location to submit request.";
+        btn.textContent = "📍 Share Location & Submit Request";
+        btn.disabled = false;
+      });
+    }
+
+    loadDashboard();
+  </script>
+
+</body>
+</html>

@@ -5,6 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register - Food Donation Platform</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .role-select-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .role-btn { border:2px solid #e5e7eb; border-radius:14px; padding:14px; cursor:pointer; text-align:center; transition:0.2s; background:white; }
+    .role-btn:hover { border-color:#3b82f6; background:#eff6ff; }
+    .role-btn.selected { border-color:#2563eb; background:#eff6ff; }
+    .role-btn.selected-ngo { border-color:#1d4ed8; background:#dbeafe; }
+    .role-btn.selected-community { border-color:#7c3aed; background:#f5f3ff; }
+    .role-btn.selected-donor { border-color:#22c55e; background:#f0fdf4; }
+    .role-btn.selected-admin { border-color:#f59e0b; background:#fffbeb; }
+    .role-btn h4 { margin:0 0 4px; font-size:14px; }
+    .role-btn p { margin:0; font-size:11px; color:#64748b; }
+    .extra-fields { display:none; border-radius:14px; padding:16px; margin-top:10px; }
+    .extra-fields.show { display:block; }
+    .ngo-extra { background:#eff6ff; border:1px solid #bfdbfe; }
+    .community-extra { background:#f5f3ff; border:1px solid #ddd6fe; }
+    .extra-fields label { font-weight:700; font-size:13px; display:block; margin-bottom:5px; }
+    .ngo-extra label { color:#1d4ed8; }
+    .community-extra label { color:#7c3aed; }
+    .extra-fields input, .extra-fields select, .extra-fields textarea { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px; margin-bottom:12px; background:white; outline:none; }
+    .extra-fields textarea { resize:vertical; min-height:60px; }
+    .warn-box { border-radius:10px; padding:12px 14px; font-size:13px; margin-bottom:14px; }
+    .warn-ngo { background:#fef3c7; border:1px solid #fcd34d; color:#92400e; }
+    .warn-community { background:#f5f3ff; border:1px solid #ddd6fe; color:#5b21b6; }
+    .pending-screen { display:none; text-align:center; padding:30px 20px; }
+    .pending-screen.show { display:block; }
+    .pending-icon { font-size:60px; margin-bottom:16px; }
+    .pending-screen h3 { font-size:22px; margin-bottom:10px; }
+    .pending-steps { background:#f8fafc; border-radius:12px; padding:16px; margin-top:16px; text-align:left; }
+    .pending-steps li { color:#334155; margin-bottom:8px; font-size:14px; }
+    .logo-wrap { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .logo-circle { width:56px; height:56px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-size:22px; border:2px solid #bfdbfe; flex-shrink:0; }
+    .logo-preview-img { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid #22c55e; display:none; flex-shrink:0; }
+    .otp-row { display:flex; gap:8px; }
+    .otp-row input { flex:1; }
+    .otp-row button { white-space:nowrap; padding:0 14px; font-size:13px; }
+    .verified-tag { color:#22c55e; font-size:12px; font-weight:700; display:none; }
+  </style>
 </head>
 <body>
 
@@ -27,66 +64,193 @@
       <div class="login-premium-left">
         <span class="login-premium-tag">Join Our Platform</span>
         <h2>Create Your Account</h2>
-        <p>Register as a donor, NGO, or admin to start making a difference in your community.</p>
+        <p>Choose your role and register to start making a difference.</p>
 
-        <div class="role-preview-grid">
+        <div class="role-preview-grid" style="margin-top:20px;">
           <div class="role-preview-card donor-role">
-            <h3>Donor</h3>
-            <p>Donate surplus food and track your contributions.</p>
+            <h3>🍱 Donor</h3>
+            <p>Donate surplus food instantly. No verification needed.</p>
           </div>
           <div class="role-preview-card ngo-role">
-            <h3>NGO / Receiver</h3>
-            <p>Accept food requests and coordinate pickups.</p>
+            <h3>🏢 Verified NGO</h3>
+            <p>Full access. Requires registration document. Admin verified.</p>
+          </div>
+          <div class="role-preview-card" style="border-left:5px solid #7c3aed;">
+            <h3>👥 Community Receiver</h3>
+            <p>No registration needed. Phone OTP + Aadhaar verification. Limited access with admin approval per request.</p>
           </div>
           <div class="role-preview-card admin-role">
-            <h3>Admin</h3>
-            <p>Manage the full platform and all users.</p>
+            <h3>⚙️ Admin</h3>
+            <p>Full platform control and verification authority.</p>
           </div>
+        </div>
+
+        <div style="margin-top:16px;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px;font-size:13px;color:#e2e8f0;">
+          🔒 NGO and Community Receiver accounts require verification before full access.
         </div>
       </div>
 
       <div class="login-premium-right">
         <div class="login-form-box">
-          <h3>Create Account</h3>
-          <p class="login-subtext">Fill in your details to get started.</p>
 
-          <form id="registerForm" class="modern-form">
-            <div class="form-group">
-              <label for="regName">Full Name</label>
-              <input type="text" id="regName" placeholder="Enter your full name" required />
-            </div>
+          <div id="registerFormWrap">
+            <h3>Create Account</h3>
+            <p class="login-subtext">Select your role to get started.</p>
 
-            <div class="form-group">
-              <label for="regEmail">Email</label>
-              <input type="email" id="regEmail" placeholder="Enter your email" required />
-            </div>
+            <form id="registerForm" class="modern-form">
 
-            <div class="form-group">
-              <label for="regPassword">Password</label>
-              <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6" />
-            </div>
+              <!-- Logo Upload -->
+              <div class="form-group">
+                <label>Profile Photo / Logo</label>
+                <div class="logo-wrap">
+                  <div class="logo-circle" id="logoCircle">👤</div>
+                  <img id="logoPreviewImg" class="logo-preview-img" src="" alt="preview"/>
+                  <div>
+                    <input type="file" id="logoFile" accept="image/*" style="font-size:12px;" onchange="previewLogo(this)"/>
+                    <small style="color:#64748b;display:block;margin-top:3px;">JPG/PNG max 2MB</small>
+                  </div>
+                </div>
+              </div>
 
-            <div class="form-group">
-              <label for="regRole">Select Role</label>
-              <select id="regRole" required>
-                <option value="">Choose your role</option>
-                <option value="donor">Donor</option>
-                <option value="ngo">Receiver / NGO</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
+              <div class="form-group">
+                <label for="regName">Full Name / Organization Name</label>
+                <input type="text" id="regName" placeholder="Your name or organization" required/>
+              </div>
 
-            <button type="submit" class="btn login-btn" id="registerBtn">Create Account</button>
-          </form>
+              <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" placeholder="Enter your email" required/>
+              </div>
 
-          <p id="registerMessage" class="success-message"></p>
+              <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6"/>
+              </div>
 
-          <p style="margin-top:15px; font-size:13px; text-align:center;">
-            Already have an account? <a href="login.html" style="color:#22c55e;">Login here</a>
-          </p>
+              <!-- Role Selection -->
+              <div class="form-group">
+                <label>Select Your Role</label>
+                <div class="role-select-grid">
+                  <div class="role-btn" onclick="selectRole('donor')" id="btn-donor">
+                    <h4>🍱 Donor</h4>
+                    <p>Donate food</p>
+                  </div>
+                  <div class="role-btn" onclick="selectRole('ngo')" id="btn-ngo">
+                    <h4>🏢 Verified NGO</h4>
+                    <p>Full access</p>
+                  </div>
+                  <div class="role-btn" onclick="selectRole('community')" id="btn-community">
+                    <h4>👥 Community Receiver</h4>
+                    <p>Limited access</p>
+                  </div>
+                  <div class="role-btn" onclick="selectRole('admin')" id="btn-admin">
+                    <h4>⚙️ Admin</h4>
+                    <p>Platform control</p>
+                  </div>
+                </div>
+                <input type="hidden" id="regRole" required/>
+              </div>
+
+              <!-- NGO FIELDS -->
+              <div class="extra-fields ngo-extra" id="ngoFields">
+                <div class="warn-box warn-ngo">⚠️ NGO accounts require admin verification. Fill all details and upload your registration document.</div>
+
+                <label>Official Organization Name</label>
+                <input type="text" id="ngoOrgName" placeholder="Registered organization name"/>
+
+                <label>Registration Number</label>
+                <input type="text" id="ngoRegNumber" placeholder="e.g. MH/2019/0012345"/>
+
+                <label>Full Address</label>
+                <textarea id="ngoAddress" placeholder="Complete registered address of your NGO"></textarea>
+
+                <label>Service Area</label>
+                <select id="ngoArea">
+                  <option value="">Select area</option>
+                  <option>Shivajinagar</option>
+                  <option>Kothrud</option>
+                  <option>Hadapsar</option>
+                  <option>Viman Nagar</option>
+                  <option>Pimpri</option>
+                  <option>Other</option>
+                </select>
+
+                <label>Official Contact Number</label>
+                <input type="tel" id="ngoPhone" placeholder="10-digit contact number" maxlength="10"/>
+
+                <label>Official Email (if different)</label>
+                <input type="email" id="ngoEmail" placeholder="NGO official email"/>
+
+                <label>About Your NGO</label>
+                <textarea id="ngoAbout" placeholder="Brief description of your NGO's work and mission..."></textarea>
+
+                <label>📄 Upload Registration Document (Required)</label>
+                <input type="file" id="ngoDoc" accept=".pdf,.jpg,.jpeg,.png"/>
+                <small style="color:#1d4ed8;display:block;margin-bottom:8px;">PDF, JPG or PNG — max 5MB</small>
+              </div>
+
+              <!-- COMMUNITY RECEIVER FIELDS -->
+              <div class="extra-fields community-extra" id="communityFields">
+                <div class="warn-box warn-community">👥 Community Receiver: No registration document needed. Verify your phone and Aadhaar. Each food request needs admin approval.</div>
+
+                <label>Mobile Number (for OTP verification)</label>
+                <div class="otp-row">
+                  <input type="tel" id="commPhone" placeholder="10-digit mobile number" maxlength="10"/>
+                  <button type="button" class="btn" id="sendCommOtpBtn" onclick="sendCommunityOTP()">Send OTP</button>
+                </div>
+                <div class="otp-row" id="commOtpRow" style="display:none;margin-bottom:12px;">
+                  <input type="text" id="commOtpInput" placeholder="Enter 6-digit OTP" maxlength="6"/>
+                  <button type="button" class="btn" onclick="verifyCommunityOTP()">Verify</button>
+                </div>
+                <span class="verified-tag" id="phoneVerifiedTag">✅ Phone Verified</span>
+
+                <label style="margin-top:10px;">Aadhaar Number</label>
+                <input type="text" id="commAadhaar" placeholder="12-digit Aadhaar number" maxlength="12"/>
+
+                <label>📷 Upload Aadhaar Card Photo (Required)</label>
+                <input type="file" id="commAadhaarPhoto" accept="image/*,.pdf"/>
+                <small style="color:#7c3aed;display:block;margin-bottom:8px;">Front side of Aadhaar card — JPG/PNG/PDF max 3MB</small>
+
+                <label>🤳 Selfie / Photo (Optional)</label>
+                <input type="file" id="commSelfie" accept="image/*"/>
+                <small style="color:#94a3b8;display:block;margin-bottom:8px;">Optional but helps with verification</small>
+
+                <label>Area / Location</label>
+                <select id="commArea">
+                  <option value="">Select your area</option>
+                  <option>Shivajinagar</option>
+                  <option>Kothrud</option>
+                  <option>Hadapsar</option>
+                  <option>Viman Nagar</option>
+                  <option>Pimpri</option>
+                  <option>Other</option>
+                </select>
+
+                <label>About Your Community / Group</label>
+                <textarea id="commAbout" placeholder="Describe your community, how many people you serve, etc."></textarea>
+              </div>
+
+              <button type="submit" class="btn login-btn" id="registerBtn" style="margin-top:16px;">Create Account</button>
+            </form>
+
+            <p id="registerMessage" class="success-message"></p>
+            <p style="margin-top:15px;font-size:13px;text-align:center;">
+              Already have an account? <a href="login.html" style="color:#22c55e;">Login here</a>
+            </p>
+          </div>
+
+          <!-- PENDING SCREEN (NGO / Community) -->
+          <div class="pending-screen" id="pendingScreen">
+            <div class="pending-icon" id="pendingIcon">⏳</div>
+            <h3 id="pendingTitle" style="color:#1d4ed8;">Verification Pending</h3>
+            <p id="pendingMsg">Your registration has been submitted successfully!</p>
+            <div class="pending-steps" id="pendingSteps"></div>
+            <p style="margin-top:20px;font-size:13px;color:#94a3b8;">Usually takes 24-48 hours.</p>
+            <a href="index.html" class="btn" style="margin-top:20px;display:inline-block;">Go to Home</a>
+          </div>
+
         </div>
       </div>
-
     </div>
   </section>
 
@@ -97,61 +261,202 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script>
+    let selectedRole = "";
+    let communityOtpVerified = false;
+    let communityOTP = "";
+    let communityOtpTimer = null;
+
+    function selectRole(role) {
+      selectedRole = role;
+      document.getElementById("regRole").value = role;
+      ["donor","ngo","community","admin"].forEach(r => {
+        document.getElementById("btn-" + r).className = "role-btn";
+      });
+      document.getElementById("btn-" + role).className = "role-btn selected-" + role;
+      document.getElementById("ngoFields").classList.remove("show");
+      document.getElementById("communityFields").classList.remove("show");
+      const btn = document.getElementById("registerBtn");
+      if (role === "ngo") {
+        document.getElementById("ngoFields").classList.add("show");
+        btn.textContent = "Submit for Verification";
+      } else if (role === "community") {
+        document.getElementById("communityFields").classList.add("show");
+        btn.textContent = "Submit for Verification";
+      } else {
+        btn.textContent = "Create Account";
+      }
+    }
+
+    function previewLogo(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById("logoPreviewImg").src = e.target.result;
+        document.getElementById("logoPreviewImg").style.display = "block";
+        document.getElementById("logoCircle").style.display = "none";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function sendCommunityOTP() {
+      const phone = document.getElementById("commPhone").value.trim();
+      if (!/^\d{10}$/.test(phone)) { alert("Enter valid 10-digit number."); return; }
+      communityOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      document.getElementById("commOtpRow").style.display = "flex";
+      document.getElementById("sendCommOtpBtn").textContent = "Resend";
+      clearInterval(communityOtpTimer);
+      let t = 120;
+      communityOtpTimer = setInterval(() => {
+        t--;
+        if (t <= 0) { clearInterval(communityOtpTimer); }
+      }, 1000);
+      setTimeout(() => alert("📱 Demo OTP for " + phone + ": " + communityOTP), 300);
+    }
+
+    function verifyCommunityOTP() {
+      const entered = document.getElementById("commOtpInput").value.trim();
+      if (entered === communityOTP) {
+        communityOtpVerified = true;
+        document.getElementById("phoneVerifiedTag").style.display = "block";
+        document.getElementById("commOtpRow").style.display = "none";
+        document.getElementById("commOtpInput").value = "";
+        alert("✅ Phone number verified!");
+      } else {
+        alert("❌ Wrong OTP. Try again.");
+      }
+    }
+
     const registerForm = document.getElementById("registerForm");
     const registerMessage = document.getElementById("registerMessage");
     const registerBtn = document.getElementById("registerBtn");
 
-    registerForm.addEventListener("submit", async function (e) {
+    registerForm.addEventListener("submit", async function(e) {
       e.preventDefault();
 
       const name = document.getElementById("regName").value.trim();
       const email = document.getElementById("regEmail").value.trim();
       const password = document.getElementById("regPassword").value;
-      const role = document.getElementById("regRole").value;
+      const role = selectedRole;
 
-      if (!role) {
-        registerMessage.style.color = "red";
-        registerMessage.textContent = "❌ Please select a role.";
-        return;
+      if (!role) { registerMessage.style.color="red"; registerMessage.textContent="❌ Please select a role."; return; }
+
+      // NGO validation
+      if (role === "ngo") {
+        if (!document.getElementById("ngoRegNumber").value.trim()) { registerMessage.style.color="red"; registerMessage.textContent="❌ Enter NGO registration number."; return; }
+        if (!document.getElementById("ngoAddress").value.trim()) { registerMessage.style.color="red"; registerMessage.textContent="❌ Enter NGO address."; return; }
+        const phone = document.getElementById("ngoPhone").value.trim();
+        if (!phone || !/^\d{10}$/.test(phone)) { registerMessage.style.color="red"; registerMessage.textContent="❌ Enter valid 10-digit contact number."; return; }
+        const doc = document.getElementById("ngoDoc").files[0];
+        if (!doc) { registerMessage.style.color="red"; registerMessage.textContent="❌ Upload registration document."; return; }
+        if (doc.size > 5*1024*1024) { registerMessage.style.color="red"; registerMessage.textContent="❌ Document must be under 5MB."; return; }
       }
 
-      registerBtn.textContent = "Creating account...";
+      // Community validation
+      if (role === "community") {
+        if (!communityOtpVerified) { registerMessage.style.color="red"; registerMessage.textContent="❌ Please verify your phone number first."; return; }
+        const aadhaar = document.getElementById("commAadhaar").value.trim();
+        if (!/^\d{12}$/.test(aadhaar)) { registerMessage.style.color="red"; registerMessage.textContent="❌ Enter valid 12-digit Aadhaar number."; return; }
+        if (!document.getElementById("commAadhaarPhoto").files[0]) { registerMessage.style.color="red"; registerMessage.textContent="❌ Upload Aadhaar card photo."; return; }
+      }
+
+      registerBtn.textContent = "Processing...";
       registerBtn.disabled = true;
       registerMessage.textContent = "";
 
-      // Sign up — pass role+name in metadata so we can save it even before email confirm
       const { data, error } = await db.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name, role }
-        }
+        email, password,
+        options: { data: { name, role } }
       });
 
       if (error) {
         registerMessage.style.color = "red";
         registerMessage.textContent = "❌ " + error.message;
-        registerBtn.textContent = "Create Account";
+        registerBtn.textContent = (role === "ngo" || role === "community") ? "Submit for Verification" : "Create Account";
         registerBtn.disabled = false;
         return;
       }
 
       const user = data.user;
+      if (!user) { registerMessage.style.color="red"; registerMessage.textContent="❌ Registration failed."; registerBtn.disabled=false; return; }
 
-      if (user) {
-        // Insert profile — works even without email confirmation when RLS allows it
-        await db.from("profiles").upsert([
-          { id: user.id, email: user.email, name, role }
-        ]);
+      // Upload logo
+      let logoUrl = null;
+      const logoFile = document.getElementById("logoFile").files[0];
+      if (logoFile && logoFile.size <= 2*1024*1024) {
+        const path = `avatars/${user.id}_logo.${logoFile.name.split(".").pop()}`;
+        const { error: le } = await db.storage.from("avatars").upload(path, logoFile, { upsert: true });
+        if (!le) { const { data: u } = db.storage.from("avatars").getPublicUrl(path); logoUrl = u.publicUrl; }
       }
 
-      registerMessage.style.color = "green";
-      registerMessage.textContent = "✅ Account created! Redirecting to login...";
-      registerBtn.textContent = "Create Account";
+      const profileData = {
+        id: user.id, email: user.email, name, role,
+        avatar_url: logoUrl,
+        verified: (role === "ngo" || role === "community") ? false : true
+      };
+
+      if (role === "ngo") {
+        profileData.ngo_org_name = document.getElementById("ngoOrgName").value.trim();
+        profileData.ngo_reg_number = document.getElementById("ngoRegNumber").value.trim();
+        profileData.ngo_address = document.getElementById("ngoAddress").value.trim();
+        profileData.ngo_area = document.getElementById("ngoArea").value;
+        profileData.ngo_phone = document.getElementById("ngoPhone").value.trim();
+        profileData.ngo_official_email = document.getElementById("ngoEmail").value.trim();
+        profileData.ngo_about = document.getElementById("ngoAbout").value.trim();
+        const docFile = document.getElementById("ngoDoc").files[0];
+        if (docFile) {
+          const dp = `ngo-docs/${user.id}_doc.${docFile.name.split(".").pop()}`;
+          const { error: de } = await db.storage.from("ngo-docs").upload(dp, docFile, { upsert: true });
+          if (!de) { const { data: du } = db.storage.from("ngo-docs").getPublicUrl(dp); profileData.ngo_doc_url = du.publicUrl; }
+        }
+      }
+
+      if (role === "community") {
+        profileData.comm_phone = document.getElementById("commPhone").value.trim();
+        profileData.comm_aadhaar = document.getElementById("commAadhaar").value.trim();
+        profileData.comm_area = document.getElementById("commArea").value;
+        profileData.comm_about = document.getElementById("commAbout").value.trim();
+        const aadhaarFile = document.getElementById("commAadhaarPhoto").files[0];
+        if (aadhaarFile) {
+          const ap = `community-docs/${user.id}_aadhaar.${aadhaarFile.name.split(".").pop()}`;
+          const { error: ae } = await db.storage.from("ngo-docs").upload(ap, aadhaarFile, { upsert: true });
+          if (!ae) { const { data: au } = db.storage.from("ngo-docs").getPublicUrl(ap); profileData.comm_aadhaar_url = au.publicUrl; }
+        }
+        const selfieFile = document.getElementById("commSelfie").files[0];
+        if (selfieFile) {
+          const sp = `community-docs/${user.id}_selfie.${selfieFile.name.split(".").pop()}`;
+          const { error: se } = await db.storage.from("ngo-docs").upload(sp, selfieFile, { upsert: true });
+          if (!se) { const { data: su } = db.storage.from("ngo-docs").getPublicUrl(sp); profileData.comm_selfie_url = su.publicUrl; }
+        }
+      }
+
+      await db.from("profiles").upsert([profileData]);
+
       registerBtn.disabled = false;
       registerForm.reset();
+      selectedRole = "";
 
-      setTimeout(() => { window.location.href = "login.html"; }, 2000);
+      if (role === "ngo") {
+        document.getElementById("pendingIcon").textContent = "⏳";
+        document.getElementById("pendingTitle").textContent = "NGO Verification Pending";
+        document.getElementById("pendingTitle").style.color = "#1d4ed8";
+        document.getElementById("pendingMsg").textContent = "Your NGO registration has been submitted!";
+        document.getElementById("pendingSteps").innerHTML = `<strong style="color:#1d4ed8;">What happens next?</strong><ul style="margin-top:10px;padding-left:18px;"><li>✅ Registration documents received</li><li>🔍 Admin will verify your NGO details</li><li>📧 You'll get an email notification once approved</li><li>🔓 After approval you can login and accept donations</li></ul>`;
+        document.getElementById("registerFormWrap").style.display = "none";
+        document.getElementById("pendingScreen").classList.add("show");
+      } else if (role === "community") {
+        document.getElementById("pendingIcon").textContent = "👥";
+        document.getElementById("pendingTitle").textContent = "Community Receiver Pending";
+        document.getElementById("pendingTitle").style.color = "#7c3aed";
+        document.getElementById("pendingMsg").textContent = "Your community receiver registration has been submitted!";
+        document.getElementById("pendingSteps").innerHTML = `<strong style="color:#7c3aed;">What happens next?</strong><ul style="margin-top:10px;padding-left:18px;"><li>✅ Aadhaar and phone verified</li><li>🔍 Admin will review your details</li><li>📧 Email notification on approval</li><li>⚠️ Each food request needs admin approval</li><li>📍 Live location required when accepting food</li></ul>`;
+        document.getElementById("registerFormWrap").style.display = "none";
+        document.getElementById("pendingScreen").classList.add("show");
+      } else {
+        registerMessage.style.color = "green";
+        registerMessage.textContent = "✅ Account created! Redirecting to login...";
+        setTimeout(() => { window.location.href = "login.html"; }, 2000);
+      }
     });
   </script>
 

@@ -80,6 +80,48 @@
   </section>
 
   <section class="admin-main-grid">
+    <!-- NGO VERIFICATION PANEL -->
+    <div class="admin-panel-card premium-admin-panel" style="grid-column:1/-1;margin-bottom:0;">
+      <div class="panel-head">
+        <div>
+          <h2>🔍 NGO Verification Requests</h2>
+          <p>Review and approve or reject pending NGO registrations</p>
+        </div>
+        <span id="pendingNgoCount" style="background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:999px;font-weight:700;font-size:13px;">0 Pending</span>
+      </div>
+      <div id="ngoVerificationList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px;"></div>
+    </div>
+  </section>
+
+  <!-- COMMUNITY REQUESTS PANEL -->
+  <section class="admin-main-grid">
+    <div class="admin-panel-card premium-admin-panel" style="grid-column:1/-1;">
+      <div class="panel-head">
+        <div>
+          <h2>👥 Community Receiver Verifications</h2>
+          <p>Review and approve or reject pending community receiver registrations</p>
+        </div>
+        <span id="pendingCommCount" style="background:#f5f3ff;color:#5b21b6;padding:6px 14px;border-radius:999px;font-weight:700;font-size:13px;">0 Pending</span>
+      </div>
+      <div id="commVerificationList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px;"></div>
+    </div>
+  </section>
+
+  <!-- COMMUNITY FOOD REQUESTS PANEL -->
+  <section class="admin-main-grid">
+    <div class="admin-panel-card premium-admin-panel" style="grid-column:1/-1;">
+      <div class="panel-head">
+        <div>
+          <h2>📬 Community Food Requests</h2>
+          <p>Approve or reject food collection requests from community receivers</p>
+        </div>
+        <span id="pendingFoodReqCount" style="background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:999px;font-weight:700;font-size:13px;">0 Pending</span>
+      </div>
+      <div id="commFoodRequestList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:10px;"></div>
+    </div>
+  </section>
+
+  <section class="admin-main-grid">
     <div class="admin-panel-card premium-admin-panel">
       <div class="panel-head">
         <div>
@@ -284,7 +326,178 @@
     });
 
     loadAdminDashboard();
-  </script>
+    loadNgoVerifications();
+    loadCommunityVerifications();
+    loadCommunityFoodRequests();
+
+    async function loadCommunityVerifications() {
+      const { data: comms } = await db.from("profiles").select("*").eq("role","community").eq("verified",false);
+      const list = document.getElementById("commVerificationList");
+      const countEl = document.getElementById("pendingCommCount");
+      if (!comms || comms.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8;font-size:14px;">✅ No pending community verifications.</p>`;
+        countEl.textContent = "0 Pending"; return;
+      }
+      countEl.textContent = comms.length + " Pending";
+      list.innerHTML = "";
+      comms.forEach(c => {
+        const card = document.createElement("div");
+        card.style.cssText = "background:white;border:2px solid #ddd6fe;border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.08);";
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            ${c.avatar_url ? `<img src="${c.avatar_url}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;"/>` : `<div style="width:46px;height:46px;border-radius:50%;background:#f5f3ff;display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>`}
+            <div><h4 style="color:#5b21b6;margin:0;">${c.name || "Community Member"}</h4><p style="color:#64748b;font-size:12px;margin:2px 0;">${c.email}</p></div>
+          </div>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Phone:</strong> ${c.comm_phone || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Aadhaar:</strong> ${c.comm_aadhaar ? c.comm_aadhaar.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3") : "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Area:</strong> ${c.comm_area || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;">${c.comm_about || ""}</p>
+          ${c.comm_aadhaar_url ? `<a href="${c.comm_aadhaar_url}" target="_blank" style="font-size:13px;color:#7c3aed;display:inline-block;margin:6px 0;">📄 View Aadhaar</a>` : ""}
+          ${c.comm_selfie_url ? `&nbsp;<a href="${c.comm_selfie_url}" target="_blank" style="font-size:13px;color:#7c3aed;">🤳 View Selfie</a>` : ""}
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn" style="background:#22c55e;padding:8px 14px;font-size:13px;" onclick="verifyCommunity('${c.id}',true)">✅ Approve</button>
+            <button class="btn btn-outline" style="color:red;border-color:red;padding:8px 14px;font-size:13px;" onclick="verifyCommunity('${c.id}',false)">❌ Reject</button>
+          </div>`;
+        list.appendChild(card);
+      });
+    }
+
+    async function verifyCommunity(userId, approve) {
+      if (approve) {
+        const { error } = await db.from("profiles").update({ verified: true }).eq("id", userId);
+        if (error) { alert("Error: " + error.message); return; }
+        // Get email and send notification
+        const { data: p } = await db.from("profiles").select("email,name").eq("id",userId).single();
+        if (p) await sendApprovalEmail(p.email, p.name, "Community Receiver");
+        alert("✅ Community receiver approved!");
+      } else {
+        if (!confirm("Reject this community receiver?")) return;
+        await db.from("profiles").delete().eq("id", userId);
+        alert("❌ Rejected and removed.");
+      }
+      loadCommunityVerifications();
+    }
+
+    async function loadCommunityFoodRequests() {
+      const { data: reqs } = await db.from("community_requests").select("*,donation(foodType,quantity,area,pickupAddress)").eq("status","Pending").order("id",{ascending:false});
+      const list = document.getElementById("commFoodRequestList");
+      const countEl = document.getElementById("pendingFoodReqCount");
+      if (!reqs || reqs.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8;font-size:14px;">✅ No pending food requests.</p>`;
+        countEl.textContent = "0 Pending"; return;
+      }
+      countEl.textContent = reqs.length + " Pending";
+      list.innerHTML = "";
+      reqs.forEach(r => {
+        const card = document.createElement("div");
+        card.style.cssText = "background:white;border:2px solid #fcd34d;border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.08);";
+        const mapLink = r.latitude ? `<a href="https://maps.google.com/?q=${r.latitude},${r.longitude}" target="_blank" style="font-size:13px;color:#2563eb;">📍 View Location on Map</a>` : "<span style='font-size:12px;color:#94a3b8;'>No location</span>";
+        card.innerHTML = `
+          <h4 style="color:#92400e;margin-bottom:8px;">${r.requester_name || "Community Member"}</h4>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Email:</strong> ${r.requester_email || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Food:</strong> ${r.donation?.foodType || "-"} (${r.donation?.quantity || "-"})</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Area:</strong> ${r.donation?.area || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Pickup:</strong> ${r.donation?.pickupAddress || "-"}</p>
+          <p style="font-size:13px;margin:6px 0;">${mapLink}</p>
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn" style="background:#22c55e;padding:8px 14px;font-size:13px;" onclick="approveFoodRequest(${r.id},'${r.requester_email}','${r.requester_name}')">✅ Approve</button>
+            <button class="btn btn-outline" style="color:red;border-color:red;padding:8px 14px;font-size:13px;" onclick="rejectFoodRequest(${r.id})">❌ Reject</button>
+          </div>`;
+        list.appendChild(card);
+      });
+    }
+
+    async function approveFoodRequest(reqId, email, name) {
+      const { error } = await db.from("community_requests").update({ status: "Approved" }).eq("id", reqId);
+      if (error) { alert("Error: " + error.message); return; }
+      await sendApprovalEmail(email, name, "Food Collection Request");
+      alert("✅ Food request approved! Community receiver notified.");
+      loadCommunityFoodRequests();
+    }
+
+    async function rejectFoodRequest(reqId) {
+      const reason = prompt("Enter rejection reason (optional):") || "Not specified";
+      const { error } = await db.from("community_requests").update({ status: "Rejected", reject_reason: reason }).eq("id", reqId);
+      if (error) { alert("Error: " + error.message); return; }
+      alert("❌ Request rejected.");
+      loadCommunityFoodRequests();
+    }
+
+    // Email notification using mailto (opens email client)
+    // For real email, use Supabase Edge Functions with SendGrid/Resend
+    async function sendApprovalEmail(email, name, type) {
+      // Store notification in DB so user sees it on login
+      await db.from("notifications").insert([{
+        user_email: email,
+        message: `✅ Your ${type} has been approved by admin. You can now login to the Food Donation Platform.`,
+        type: "approval"
+      }]).select();
+    }
+
+    async function loadNgoVerifications() {
+      const { data: ngos, error } = await db
+        .from("profiles")
+        .select("*")
+        .eq("role", "ngo")
+        .eq("verified", false);
+
+      const list = document.getElementById("ngoVerificationList");
+      const countEl = document.getElementById("pendingNgoCount");
+
+      if (error || !ngos || ngos.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8;font-size:14px;">✅ No pending NGO verifications.</p>`;
+        countEl.textContent = "0 Pending";
+        return;
+      }
+
+      countEl.textContent = ngos.length + " Pending";
+      list.innerHTML = "";
+
+      ngos.forEach(ngo => {
+        const card = document.createElement("div");
+        card.style.cssText = "background:white;border:2px solid #fcd34d;border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.08);";
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            ${ngo.avatar_url
+              ? `<img src="${ngo.avatar_url}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #fcd34d;"/>`
+              : `<div style="width:50px;height:50px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:22px;">🏢</div>`
+            }
+            <div>
+              <h4 style="color:#92400e;margin:0;">${ngo.ngo_org_name || ngo.name || "NGO"}</h4>
+              <p style="color:#64748b;font-size:12px;margin:2px 0;">${ngo.email}</p>
+            </div>
+          </div>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Reg No:</strong> ${ngo.ngo_reg_number || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Area:</strong> ${ngo.ngo_area || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;"><strong>Phone:</strong> ${ngo.ngo_phone || "-"}</p>
+          <p style="font-size:13px;color:#334155;margin:4px 0;">${ngo.ngo_about || ""}</p>
+          ${ngo.ngo_doc_url
+            ? `<a href="${ngo.ngo_doc_url}" target="_blank" style="font-size:13px;color:#2563eb;display:inline-block;margin:8px 0;">📄 View Registration Document</a>`
+            : `<p style="font-size:12px;color:#94a3b8;">No document uploaded</p>`
+          }
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn" style="background:#22c55e;padding:8px 16px;font-size:13px;" onclick="verifyNgo('${ngo.id}', true)">✅ Approve</button>
+            <button class="btn btn-outline" style="color:red;border-color:red;padding:8px 16px;font-size:13px;" onclick="verifyNgo('${ngo.id}', false)">❌ Reject</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    async function verifyNgo(userId, approve) {
+      if (approve) {
+        const { error } = await db.from("profiles").update({ verified: true }).eq("id", userId);
+        if (error) { alert("Error: " + error.message); return; }
+        const { data: p } = await db.from("profiles").select("email,name").eq("id",userId).single();
+        if (p) await sendApprovalEmail(p.email, p.name, "NGO Account");
+        alert("✅ NGO approved! They can now login.");
+      } else {
+        if (!confirm("Reject and delete this NGO registration?")) return;
+        await db.from("profiles").delete().eq("id", userId);
+        alert("❌ NGO rejected and removed.");
+      }
+      loadNgoVerifications();
+    }
 
 </body>
 </html>
