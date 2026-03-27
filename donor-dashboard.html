@@ -68,6 +68,11 @@
       <h3 id="donorCompleted">0</h3>
       <p>Successfully completed donations</p>
     </div>
+    <div class="donor-stat-card">
+      <span>Your Rating</span>
+      <h3 id="donorRating">-</h3>
+      <p>Average rating from NGOs</p>
+    </div>
   </section>
 
   <section class="donor-main-grid">
@@ -206,7 +211,7 @@
       donorTableBody.innerHTML = "";
       donorActivityTimeline.innerHTML = "";
 
-      let totalQuantity = 0, pending = 0, completed = 0;
+      let totalQuantity = 0, pending = 0, accepted = 0, completed = 0;
 
       if (donations.length === 0) {
         donorTableBody.innerHTML = `<tr><td colspan='5' class='empty-row'>No donations submitted yet.</td></tr>`;
@@ -216,7 +221,35 @@
         totalQuantity += parseInt(d.quantity) || 0;
         const status = d.status || "Pending";
         if (status === "Pending") pending++;
+        if (status === "Accepted") accepted++;
         if (status === "Completed") completed++;
+
+        // Build action cell based on state
+        let actionHtml = "";
+        if (status === "Completed") {
+          actionHtml = `<span style="color:#22c55e;font-weight:700;">✅ Done</span>`;
+        } else if (status === "Accepted") {
+          if (!d.donor_confirmed) {
+            actionHtml = `
+              <div style="font-size:12px;margin-bottom:6px;">
+                <span style="color:${d.ngo_confirmed ? '#22c55e' : '#f59e0b'};">NGO: ${d.ngo_confirmed ? '✅' : '⏳'}</span>
+                &nbsp;|
+                <span style="color:#f59e0b;">You: ⏳</span>
+              </div>
+              <button class="btn" style="padding:4px 10px;font-size:12px;background:#22c55e;" onclick="donorConfirm(${d.id})">Mark Complete</button>`;
+          } else if (d.donor_confirmed && !d.ngo_confirmed) {
+            actionHtml = `
+              <div style="font-size:12px;">
+                <span style="color:#22c55e;">You: ✅</span>
+                &nbsp;|
+                <span style="color:#f59e0b;">NGO: ⏳ Waiting...</span>
+              </div>`;
+          } else if (d.donor_confirmed && d.ngo_confirmed) {
+            actionHtml = `<span style="color:#22c55e;font-weight:700;">✅ Both Confirmed</span>`;
+          }
+        } else {
+          actionHtml = `<span style="color:#f59e0b;font-size:12px;">⏳ Awaiting NGO</span>`;
+        }
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -225,10 +258,8 @@
           <td>${d.area || "-"}</td>
           <td><span class="status-pill ${statusBadgeClass(status)}">${status}</span></td>
           <td>
-            ${d.status === "Accepted" && !d.donor_confirmed ? `<button class="btn" style="padding:4px 10px;font-size:12px;background:#22c55e;" onclick="donorConfirm(${d.id})">Mark Complete</button>` : ""}
-            ${d.donor_confirmed && !d.ngo_confirmed ? `<span style="font-size:11px;color:#888;">Waiting NGO...</span>` : ""}
-            ${d.status === "Completed" ? `<span style="font-size:11px;color:#22c55e;">✅ Done</span>` : ""}
-            <button class="btn btn-outline" style="padding:4px 10px;font-size:12px;" onclick="deleteDonation(${d.id})">Delete</button>
+            ${actionHtml}
+            <button class="btn btn-outline" style="padding:4px 10px;font-size:12px;margin-top:6px;" onclick="deleteDonation(${d.id})">Delete</button>
           </td>
         `;
         donorTableBody.appendChild(row);
@@ -241,14 +272,14 @@
         latest.forEach((d) => {
           const item = document.createElement("div");
           item.className = "timeline-item";
-          item.innerHTML = `<h4>${d.foodType || "Food Donation"}</h4><p>${d.quantity || "-"} • ${d.area || "-"} • ${d.status || "Pending"}</p>`;
+          item.innerHTML = `<h4>${d.foodType || "Food Donation"}</h4><p>${d.quantity || "-"} • ${d.area || "-"} • <strong>${d.status || "Pending"}</strong></p>`;
           donorActivityTimeline.appendChild(item);
         });
       }
 
       document.getElementById("donorTotalDonations").textContent = donations.length;
       document.getElementById("donorFoodDonated").textContent = totalQuantity + " kg";
-      document.getElementById("donorPending").textContent = pending;
+      document.getElementById("donorPending").textContent = pending + accepted; // pending + accepted = not yet completed
       document.getElementById("donorCompleted").textContent = completed;
 
       const completionPercent = donations.length ? Math.round((completed / donations.length) * 100) : 0;
@@ -263,6 +294,19 @@
     }
 
     loadDonorDashboard();
+
+    async function loadDonorRating() {
+      const { data } = await db
+        .from("donor_ratings")
+        .select("stars")
+        .eq("donor_user_id", userId);
+      const el = document.getElementById("donorRating");
+      if (!data || data.length === 0) { el.textContent = "No ratings"; return; }
+      const avg = (data.reduce((sum, r) => sum + r.stars, 0) / data.length).toFixed(1);
+      el.textContent = `⭐ ${avg} (${data.length})`;
+    }
+
+    loadDonorRating();
   </script>
 
 </body>
