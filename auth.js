@@ -60,21 +60,19 @@ function setupRoleNavbar() {
   if (role === "admin" && adminLink) adminLink.style.display = "inline-block";
 
   // Add profile link dynamically if not present
-  const existingProfile = document.getElementById("navProfile");
-  if (!existingProfile) {
+  if (!document.getElementById("navProfile")) {
     const profileLi = document.createElement("li");
     profileLi.id = "navProfile";
-    profileLi.innerHTML = `<a href="profile.html">👤 Profile</a>`;
-    logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
+    profileLi.innerHTML = '<a href="profile.html">👤 Profile</a>';
+    logoutLink.parentElement.insertAdjacentElement("beforebegin", profileLi);
   }
 
   // Add Live Map link dynamically if not present
-  const existingMap = document.getElementById("navLiveMap");
-  if (!existingMap) {
+  if (!document.getElementById("navLiveMap")) {
     const mapLi = document.createElement("li");
     mapLi.id = "navLiveMap";
-    mapLi.innerHTML = `<a href="live-tracking.html">📍 Live Map</a>`;
-    logoutLink.parentElement.parentElement.insertBefore(mapLi, logoutLink.parentElement);
+    mapLi.innerHTML = '<a href="live-tracking.html">📍 Live Map</a>';
+    logoutLink.parentElement.insertAdjacentElement("beforebegin", mapLi);
   }
 
   // Hide Available Food and Donate links for admin
