@@ -89,7 +89,7 @@ body {
 .btn:hover {
   transform: translateY(-3px) scale(1.03);
   background: linear-gradient(135deg,#1d4ed8,#60a5fa);
-  box-shadow: 0 0px 25px rgba(59, 130, 246, 0.35);
+  
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0, 0.4);
   
 }
