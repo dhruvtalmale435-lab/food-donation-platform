@@ -64,7 +64,7 @@ function setupRoleNavbar() {
   if (!existingProfile) {
     const profileLi = document.createElement("li");
     profileLi.id = "navProfile";
-    profileLi.innerHTML = `<a href="profile.html">👤 Profile</a>`;
+    profileLi.innerHTML = '<a href="profile.html">👤 Profile</a>';
     logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
   }
 
@@ -73,7 +73,7 @@ function setupRoleNavbar() {
   if (!existingMap) {
     const mapLi = document.createElement("li");
     mapLi.id = "navLiveMap";
-    mapLi.innerHTML = `<a href="live-tracking.html">📍 Live Map</a>`;
+    mapLi.innerHTML = '<a href="live-tracking.html">📍 Live Map</a>';
     logoutLink.parentElement.parentElement.insertBefore(mapLi, logoutLink.parentElement);
   }
 
