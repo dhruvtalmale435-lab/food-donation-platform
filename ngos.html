@@ -12,10 +12,13 @@
       <h1>Food Donation Platform</h1>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="donate.html">Donate</a></li>
         <li><a href="food.html">Available Food</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
         <li><a href="ngos.html" class="active">NGOs</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -44,6 +47,15 @@
       <p><strong>Accepts:</strong> Cooked Food, Packaged Food</p>
       <p><strong>Contact:</strong> +91 9876543210</p>
       <p><strong>Status:</strong> Available</p>
+      <p class="ngo-rating-display" style="color:#f59e0b;font-weight:700;margin:8px 0;">Loading...</p>
+      <div class="star-row" style="margin-bottom:10px;">
+        <span style="font-size:13px;color:#64748b;">Rate: </span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Robin Hood Army Pune',1)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Robin Hood Army Pune',2)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Robin Hood Army Pune',3)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Robin Hood Army Pune',4)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Robin Hood Army Pune',5)">⭐</span>
+      </div>
       <button>Request Pickup</button>
     </div>
 
@@ -53,6 +65,15 @@
       <p><strong>Accepts:</strong> Dry Food, Meals</p>
       <p><strong>Contact:</strong> +91 9765432101</p>
       <p><strong>Status:</strong> Available</p>
+      <p class="ngo-rating-display" style="color:#f59e0b;font-weight:700;margin:8px 0;">Loading...</p>
+      <div class="star-row" style="margin-bottom:10px;">
+        <span style="font-size:13px;color:#64748b;">Rate: </span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Feeding Hands Foundation',1)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Feeding Hands Foundation',2)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Feeding Hands Foundation',3)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Feeding Hands Foundation',4)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Feeding Hands Foundation',5)">⭐</span>
+      </div>
       <button>Request Pickup</button>
     </div>
 
@@ -62,6 +83,15 @@
       <p><strong>Accepts:</strong> Fresh Cooked Food</p>
       <p><strong>Contact:</strong> +91 9988776655</p>
       <p><strong>Status:</strong> Busy</p>
+      <p class="ngo-rating-display" style="color:#f59e0b;font-weight:700;margin:8px 0;">Loading...</p>
+      <div class="star-row" style="margin-bottom:10px;">
+        <span style="font-size:13px;color:#64748b;">Rate: </span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Annadaan Welfare Group',1)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Annadaan Welfare Group',2)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Annadaan Welfare Group',3)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Annadaan Welfare Group',4)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Annadaan Welfare Group',5)">⭐</span>
+      </div>
       <button>Request Pickup</button>
     </div>
 
@@ -71,6 +101,15 @@
       <p><strong>Accepts:</strong> Snacks, Meals, Packaged Food</p>
       <p><strong>Contact:</strong> +91 9123456780</p>
       <p><strong>Status:</strong> Available</p>
+      <p class="ngo-rating-display" style="color:#f59e0b;font-weight:700;margin:8px 0;">Loading...</p>
+      <div class="star-row" style="margin-bottom:10px;">
+        <span style="font-size:13px;color:#64748b;">Rate: </span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Hope Meal Support',1)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Hope Meal Support',2)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Hope Meal Support',3)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Hope Meal Support',4)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Hope Meal Support',5)">⭐</span>
+      </div>
       <button>Request Pickup</button>
     </div>
 
@@ -80,6 +119,15 @@
       <p><strong>Accepts:</strong> Dry Food, Cooked Food</p>
       <p><strong>Contact:</strong> +91 9012345678</p>
       <p><strong>Status:</strong> Available</p>
+      <p class="ngo-rating-display" style="color:#f59e0b;font-weight:700;margin:8px 0;">Loading...</p>
+      <div class="star-row" style="margin-bottom:10px;">
+        <span style="font-size:13px;color:#64748b;">Rate: </span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Community Food Care',1)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Community Food Care',2)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Community Food Care',3)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Community Food Care',4)">⭐</span>
+        <span style="cursor:pointer;font-size:20px;" onclick="submitRating('Community Food Care',5)">⭐</span>
+      </div>
       <button>Request Pickup</button>
     </div>
   </section>
@@ -88,10 +136,43 @@
     <p>&copy; 2026 Food Donation Platform | Together we reduce food waste</p>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
   <script src="auth.js"></script>
   <script>
     setupRoleNavbar();
+    const role = localStorage.getItem("userRole");
+    if (role === "ngo") {
+      document.querySelectorAll(".ngo-card button").forEach(btn => btn.style.display = "none");
+    }
+
+    // NGO Rating
+    async function submitRating(ngoName, stars) {
+      const userId = localStorage.getItem("userId");
+      if (!userId) { alert("Please login to rate."); return; }
+      const { error } = await db.from("ngo_ratings").upsert([{ user_id: userId, ngo_name: ngoName, stars }]);
+      if (error) { alert("Rating failed: " + error.message); return; }
+      loadRatings();
+    }
+
+    async function loadRatings() {
+      const { data } = await db.from("ngo_ratings").select("ngo_name, stars");
+      if (!data) return;
+      const totals = {};
+      const counts = {};
+      data.forEach(r => {
+        totals[r.ngo_name] = (totals[r.ngo_name] || 0) + r.stars;
+        counts[r.ngo_name] = (counts[r.ngo_name] || 0) + 1;
+      });
+      document.querySelectorAll(".ngo-card").forEach(card => {
+        const name = card.querySelector("h3").textContent.trim();
+        const avg = counts[name] ? (totals[name] / counts[name]).toFixed(1) : null;
+        const ratingEl = card.querySelector(".ngo-rating-display");
+        if (ratingEl) ratingEl.textContent = avg ? `⭐ ${avg} (${counts[name]} ratings)` : "No ratings yet";
+      });
+    }
+
+    loadRatings();
   </script>
 </body>
 </html>

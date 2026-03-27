@@ -13,10 +13,8 @@
       <h1>Food Donation Platform</h1>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="donate.html">Donate</a></li>
         <li><a href="food.html">Available Food</a></li>
         <li><a href="ngos.html">NGOs</a></li>
-        <li><a href="view-list.html">View List</a></li>
         <li><a href="login.html" class="active">Login</a></li>
       </ul>
     </nav>
@@ -28,33 +26,33 @@
       <div class="login-premium-left">
         <span class="login-premium-tag">Secure Access Portal</span>
         <h2>Access Your Role-Based Dashboard</h2>
-        <p>
-          Login as a donor, NGO receiver, or admin to manage food donation
-          operations through a dedicated and personalized dashboard.
-        </p>
+        <p>Login as a donor, NGO receiver, or admin to manage food donation operations.</p>
 
         <div class="role-preview-grid">
           <div class="role-preview-card donor-role">
             <h3>Donor</h3>
             <p>Track donations, quantity, and recent contribution activity.</p>
           </div>
-
           <div class="role-preview-card ngo-role">
             <h3>Receiver / NGO</h3>
             <p>Accept requests, manage pickups, and coordinate food distribution.</p>
           </div>
-
           <div class="role-preview-card admin-role">
             <h3>Admin</h3>
             <p>Monitor complete platform activity and maintain overall control.</p>
           </div>
+        </div>
+
+        <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.1); border-radius:8px; font-size:13px;">
+          <strong>Don't have an account?</strong><br/>
+          <a href="register.html" style="color:#4ade80; text-decoration:underline;">Register here</a>
         </div>
       </div>
 
       <div class="login-premium-right">
         <div class="login-form-box">
           <h3>Account Login</h3>
-          <p class="login-subtext">Enter your details and choose your access role.</p>
+          <p class="login-subtext">Enter your credentials to access your dashboard.</p>
 
           <form id="loginForm" class="modern-form">
             <div class="form-group">
@@ -67,20 +65,14 @@
               <input type="password" id="loginPassword" placeholder="Enter your password" required />
             </div>
 
-            <div class="form-group">
-              <label for="loginRole">Select Role</label>
-              <select id="loginRole" required>
-                <option value="">Choose role</option>
-                <option value="donor">Donor</option>
-                <option value="ngo">Receiver / NGO</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <button type="submit" class="btn login-btn">Login Now</button>
+            <button type="submit" class="btn login-btn" id="loginBtn">Login Now</button>
           </form>
 
           <p id="loginMessage" class="success-message"></p>
+
+          <p style="margin-top:15px; font-size:13px; text-align:center;">
+            No account? <a href="register.html" style="color:#22c55e;">Register here</a>
+          </p>
         </div>
       </div>
 
@@ -91,35 +83,59 @@
     <p>&copy; 2026 Food Donation Platform | Secure Login</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
   <script>
     const loginForm = document.getElementById("loginForm");
     const loginMessage = document.getElementById("loginMessage");
+    const loginBtn = document.getElementById("loginBtn");
 
-    loginForm.addEventListener("submit", function (e) {
+    loginForm.addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const email = document.getElementById("loginEmail").value;
+      const email = document.getElementById("loginEmail").value.trim();
       const password = document.getElementById("loginPassword").value;
-      const role = document.getElementById("loginRole").value;
 
-      if (!email || !password || !role) {
-        loginMessage.textContent = "Please fill all fields.";
+      loginBtn.textContent = "Logging in...";
+      loginBtn.disabled = true;
+      loginMessage.style.color = "";
+      loginMessage.textContent = "";
+
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        loginMessage.style.color = "red";
+        loginMessage.textContent = "❌ " + error.message;
+        loginBtn.textContent = "Login Now";
+        loginBtn.disabled = false;
         return;
       }
 
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("userEmail", email);
+      const user = data.user;
 
-      loginMessage.textContent = "Login successful! Redirecting...";
+      // Try to get role from profiles table
+      const { data: profile } = await db
+        .from("profiles")
+        .select("role, name")
+        .eq("id", user.id)
+        .single();
+
+      // Fallback: check user metadata if profile not found
+      const role = profile?.role || user.user_metadata?.role || "donor";
+      const name = profile?.name || user.user_metadata?.name || email.split("@")[0];
+
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("userName", name);
+
+      loginMessage.style.color = "green";
+      loginMessage.textContent = "✅ Login successful! Redirecting...";
 
       setTimeout(() => {
-        if (role === "donor") {
-          window.location.href = "donor-dashboard.html";
-        } else if (role === "ngo") {
-          window.location.href = "ngo-dashboard.html";
-        } else if (role === "admin") {
-          window.location.href = "admin-dashboard.html";
-        }
+        if (role === "admin") window.location.href = "admin-dashboard.html";
+        else if (role === "ngo") window.location.href = "ngo-dashboard.html";
+        else window.location.href = "donor-dashboard.html";
       }, 900);
     });
   </script>

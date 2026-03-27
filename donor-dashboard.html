@@ -16,9 +16,11 @@
         <li><a href="donate.html">Donate</a></li>
         <li><a href="food.html">Available Food</a></li>
         <li><a href="ngos.html">NGOs</a></li>
-        <li><a href="view-list.html">View List</a></li>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="donor-dashboard.html" class="active">Donor Dashboard</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html" class="active">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -26,12 +28,8 @@
   <section class="donor-hero">
     <div class="donor-hero-left">
       <span class="donor-tag">Donor Panel</span>
-      <h2>Welcome Back, Donor</h2>
-      <p>
-        Manage your food contributions, monitor donation impact, and stay updated
-        with your latest activity through one clean dashboard.
-      </p>
-
+      <h2>Welcome Back, <span id="donorNameDisplay">Donor</span></h2>
+      <p>Manage your food contributions, monitor donation impact, and stay updated with your latest activity.</p>
       <div class="hero-buttons">
         <a href="donate.html" class="btn">Add Donation</a>
         <a href="view-list.html" class="btn btn-outline">View All Donations</a>
@@ -40,7 +38,7 @@
 
     <div class="donor-profile-card">
       <div class="donor-avatar">D</div>
-      <h3 id="donorNameDisplay">Donor User</h3>
+      <h3 id="donorNameCard">Donor User</h3>
       <p id="donorEmail">Not Available</p>
       <div class="donor-profile-meta">
         <span>Role: Donor</span>
@@ -55,19 +53,16 @@
       <h3 id="donorTotalDonations">0</h3>
       <p>Donation entries created by you</p>
     </div>
-
     <div class="donor-stat-card">
       <span>Food Donated</span>
       <h3 id="donorFoodDonated">0 kg</h3>
       <p>Total quantity donated so far</p>
     </div>
-
     <div class="donor-stat-card">
       <span>Pending</span>
       <h3 id="donorPending">0</h3>
       <p>Donations waiting for processing</p>
     </div>
-
     <div class="donor-stat-card">
       <span>Completed</span>
       <h3 id="donorCompleted">0</h3>
@@ -83,7 +78,6 @@
           <p>Latest entries submitted from your side</p>
         </div>
       </div>
-
       <div class="donor-table-wrap">
         <table>
           <thead>
@@ -92,6 +86,7 @@
               <th>Quantity</th>
               <th>Area</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="donorTableBody"></tbody>
@@ -106,7 +101,6 @@
           <p>Quick donor-side updates</p>
         </div>
       </div>
-
       <div id="donorActivityTimeline" class="donor-timeline"></div>
     </div>
   </section>
@@ -119,7 +113,6 @@
           <p>Your donation contribution snapshot</p>
         </div>
       </div>
-
       <div class="progress-block">
         <div class="progress-row">
           <span>Donation Completion</span>
@@ -129,7 +122,6 @@
           <div id="completionBar" class="progress-fill"></div>
         </div>
       </div>
-
       <div class="progress-block">
         <div class="progress-row">
           <span>Food Contribution Level</span>
@@ -140,10 +132,7 @@
 
     <div class="donor-panel-card donor-highlight-card">
       <h2>Your Contribution Matters</h2>
-      <p>
-        Every donation you add helps reduce food waste and supports people in need.
-        Keep contributing to grow your impact across the city.
-      </p>
+      <p>Every donation you add helps reduce food waste and supports people in need.</p>
       <a href="donate.html" class="btn">Donate More Food</a>
     </div>
   </section>
@@ -152,7 +141,21 @@
     <p>&copy; 2026 Food Donation Platform | Donor Dashboard</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
   <script>
+    protectPage(["donor"]);
+    setupRoleNavbar();
+
+    const userEmail = localStorage.getItem("userEmail") || "Not Available";
+    const userId = localStorage.getItem("userId") || null;
+    const userName = localStorage.getItem("userName") || userEmail.split("@")[0];
+
+    document.getElementById("donorEmail").textContent = userEmail;
+    document.getElementById("donorNameDisplay").textContent = userName;
+    document.getElementById("donorNameCard").textContent = userName;
+
     function statusBadgeClass(status) {
       const s = (status || "Pending").toLowerCase();
       if (s === "completed") return "completed";
@@ -160,56 +163,85 @@
       return "pending";
     }
 
-    function loadDonorDashboard() {
-      const donations = JSON.parse(localStorage.getItem("donations")) || [];
-      const userEmail = localStorage.getItem("userEmail") || "Not Available";
+    async function donorConfirm(id) {
+      const { error: e1 } = await db.from("donation").update({ donor_confirmed: true }).eq("id", id);
+      if (e1) { alert("Error: " + e1.message); return; }
 
-      document.getElementById("donorEmail").textContent = userEmail;
+      const { data, error: e2 } = await db.from("donation").select("ngo_confirmed").eq("id", id).single();
+      if (e2) { alert("Error: " + e2.message); return; }
 
-      let totalQuantity = 0;
-      let pending = 0;
-      let completed = 0;
+      if (data.ngo_confirmed) {
+        await db.from("donation").update({ status: "Completed" }).eq("id", id);
+        alert("✅ Both sides confirmed. Donation marked as Completed!");
+      } else {
+        alert("✅ Your confirmation saved. Waiting for NGO to confirm.");
+      }
+      loadDonorDashboard();
+    }
 
+    async function deleteDonation(id) {
+      if (!confirm("Delete this donation?")) return;
+      const { error } = await db.from("donation").delete().eq("id", id);
+      if (error) { alert("Delete failed: " + error.message); return; }
+      loadDonorDashboard();
+    }
+
+    async function loadDonorDashboard() {
       const donorTableBody = document.getElementById("donorTableBody");
       const donorActivityTimeline = document.getElementById("donorActivityTimeline");
+
+      donorTableBody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+
+      const { data: donations, error } = await db
+        .from("donation")
+        .select("*")
+        .eq("user_id", userId)
+        .order("id", { ascending: false });
+
+      if (error) {
+        donorTableBody.innerHTML = `<tr><td colspan='5'>Error: ${error.message}</td></tr>`;
+        return;
+      }
 
       donorTableBody.innerHTML = "";
       donorActivityTimeline.innerHTML = "";
 
-      donations.forEach((donation) => {
-        const quantity = parseInt(donation.quantity) || 0;
-        totalQuantity += quantity;
+      let totalQuantity = 0, pending = 0, completed = 0;
 
-        const status = donation.status || "Pending";
+      if (donations.length === 0) {
+        donorTableBody.innerHTML = `<tr><td colspan='5' class='empty-row'>No donations submitted yet.</td></tr>`;
+      }
+
+      donations.forEach((d) => {
+        totalQuantity += parseInt(d.quantity) || 0;
+        const status = d.status || "Pending";
         if (status === "Pending") pending++;
         if (status === "Completed") completed++;
 
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${donation.foodType || donation.food || "-"}</td>
-          <td>${donation.quantity || "-"}</td>
-          <td>${donation.area || "-"}</td>
+          <td>${d.foodType || "-"}</td>
+          <td>${d.quantity || "-"}</td>
+          <td>${d.area || "-"}</td>
           <td><span class="status-pill ${statusBadgeClass(status)}">${status}</span></td>
+          <td>
+            ${d.status === "Accepted" && !d.donor_confirmed ? `<button class="btn" style="padding:4px 10px;font-size:12px;background:#22c55e;" onclick="donorConfirm(${d.id})">Mark Complete</button>` : ""}
+            ${d.donor_confirmed && !d.ngo_confirmed ? `<span style="font-size:11px;color:#888;">Waiting NGO...</span>` : ""}
+            ${d.status === "Completed" ? `<span style="font-size:11px;color:#22c55e;">✅ Done</span>` : ""}
+            <button class="btn btn-outline" style="padding:4px 10px;font-size:12px;" onclick="deleteDonation(${d.id})">Delete</button>
+          </td>
         `;
         donorTableBody.appendChild(row);
       });
 
-      const latestDonations = donations.slice().reverse().slice(0, 5);
-      if (latestDonations.length === 0) {
-        donorActivityTimeline.innerHTML = `
-          <div class="timeline-item">
-            <h4>No activity yet</h4>
-            <p>Your latest donor activity will appear here.</p>
-          </div>
-        `;
+      const latest = donations.slice(0, 5);
+      if (latest.length === 0) {
+        donorActivityTimeline.innerHTML = `<div class="timeline-item"><h4>No activity yet</h4><p>Your latest donor activity will appear here.</p></div>`;
       } else {
-        latestDonations.forEach((donation) => {
+        latest.forEach((d) => {
           const item = document.createElement("div");
           item.className = "timeline-item";
-          item.innerHTML = `
-            <h4>${donation.foodType || donation.food || "Food Donation"}</h4>
-            <p>${donation.quantity || "-"} • ${donation.area || "-"} • ${donation.status || "Pending"}</p>
-          `;
+          item.innerHTML = `<h4>${d.foodType || "Food Donation"}</h4><p>${d.quantity || "-"} • ${d.area || "-"} • ${d.status || "Pending"}</p>`;
           donorActivityTimeline.appendChild(item);
         });
       }
@@ -219,18 +251,7 @@
       document.getElementById("donorPending").textContent = pending;
       document.getElementById("donorCompleted").textContent = completed;
 
-      if (donations.length === 0) {
-        donorTableBody.innerHTML = `
-          <tr>
-            <td colspan="4" class="empty-row">No donations submitted yet.</td>
-          </tr>
-        `;
-      }
-
-      const completionPercent = donations.length
-        ? Math.round((completed / donations.length) * 100)
-        : 0;
-
+      const completionPercent = donations.length ? Math.round((completed / donations.length) * 100) : 0;
       document.getElementById("completionPercent").textContent = completionPercent + "%";
       document.getElementById("completionBar").style.width = completionPercent + "%";
 
@@ -238,16 +259,10 @@
       if (totalQuantity >= 100) foodLevel = "Impact Donor";
       else if (totalQuantity >= 50) foodLevel = "Active Donor";
       else if (totalQuantity >= 20) foodLevel = "Growing Donor";
-
       document.getElementById("foodLevel").textContent = foodLevel;
     }
 
     loadDonorDashboard();
-  </script>
-  <script src="auth.js"></script>
-  <script>
-    protectPage(["donor"]);
-    setupRoleNavbar();
   </script>
 
 </body>

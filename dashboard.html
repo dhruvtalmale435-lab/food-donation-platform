@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
   <header>
     <nav class="navbar">
       <h1>Food Donation Platform</h1>
@@ -18,38 +19,50 @@
         <li><a href="food.html">Available Food</a></li>
         <li><a href="dashboard.html" class="active">Dashboard</a></li>
         <li><a href="ngos.html">NGOs</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
       </ul>
     </nav>
   </header>
 
   <section class="page-hero dashboard-hero">
     <h2>Dashboard Overview</h2>
-    <p>Track donations, NGO activity, food status, and overall platform impact.</p>
+    <p>Live stats, donation activity, NGO performance, and platform impact — all in one place.</p>
   </section>
 
   <section class="dashboard-stats">
     <div class="dashboard-stat-card">
       <span class="stat-label">Total Donations</span>
-      <h3>48</h3>
+      <h3 id="statTotal">0</h3>
       <p>All food donation entries submitted</p>
     </div>
-
-    <div class="dashboard-stat-card">
-      <span class="stat-label">Connected NGOs</span>
-      <h3>18</h3>
-      <p>Partner NGOs active on the platform</p>
-    </div>
-
     <div class="dashboard-stat-card">
       <span class="stat-label">Pending Pickups</span>
-      <h3>12</h3>
+      <h3 id="statPending">0</h3>
       <p>Food items waiting for collection</p>
     </div>
-
     <div class="dashboard-stat-card">
-      <span class="stat-label">Meals Served</span>
-      <h3>320</h3>
-      <p>Estimated meals delivered to people</p>
+      <span class="stat-label">Accepted</span>
+      <h3 id="statAccepted">0</h3>
+      <p>Confirmed by NGOs</p>
+    </div>
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Completed</span>
+      <h3 id="statCompleted">0</h3>
+      <p>Successfully delivered</p>
+    </div>
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Total Food Saved</span>
+      <h3 id="statFoodSaved">0 kg</h3>
+      <p>Total quantity across all donations</p>
+    </div>
+    <div class="dashboard-stat-card">
+      <span class="stat-label">Active Areas</span>
+      <h3 id="statAreas">0</h3>
+      <p>Unique donation zones</p>
     </div>
   </section>
 
@@ -57,8 +70,8 @@
     <div class="dashboard-chart-card">
       <div class="card-header-row">
         <div>
-          <h2>Donation Activity</h2>
-          <p>Weekly trend of donations received</p>
+          <h2>Donation Status Breakdown</h2>
+          <p>Live distribution of donation statuses</p>
         </div>
       </div>
       <canvas id="donationChart"></canvas>
@@ -66,65 +79,27 @@
 
     <div class="dashboard-side-card">
       <h2>Top NGO Partners</h2>
-      <div class="ngo-mini-list">
-        <div class="ngo-mini-item">
-          <h4>Robin Hood Army Pune</h4>
-          <p>Shivajinagar • 14 pickups</p>
-        </div>
-        <div class="ngo-mini-item">
-          <h4>Feeding Hands Foundation</h4>
-          <p>Kothrud • 11 pickups</p>
-        </div>
-        <div class="ngo-mini-item">
-          <h4>Hope Meal Support</h4>
-          <p>Viman Nagar • 9 pickups</p>
-        </div>
-        <div class="ngo-mini-item">
-          <h4>Annadaan Welfare Group</h4>
-          <p>Hadapsar • 7 pickups</p>
-        </div>
+      <div class="ngo-mini-list" id="ngoMiniList">
+        <p style="color:#888;font-size:13px;">Loading...</p>
       </div>
     </div>
   </section>
 
   <section class="dashboard-table">
-    <h2>Recent Activity</h2>
+    <h2>Recent Donations</h2>
     <table>
-      <tr>
-        <th>Donor</th>
-        <th>Food Type</th>
-        <th>Quantity</th>
-        <th>Area</th>
-        <th>Status</th>
-      </tr>
-      <tr>
-        <td>ABC Hostel</td>
-        <td>Rice & Curry</td>
-        <td>15 Plates</td>
-        <td>Shivajinagar</td>
-        <td><span class="status-badge collected">Collected</span></td>
-      </tr>
-      <tr>
-        <td>City Restaurant</td>
-        <td>Packaged Meals</td>
-        <td>20 Boxes</td>
-        <td>Kothrud</td>
-        <td><span class="status-badge pending">Pending</span></td>
-      </tr>
-      <tr>
-        <td>Food Corner</td>
-        <td>Bread & Snacks</td>
-        <td>10 Packets</td>
-        <td>Hadapsar</td>
-        <td><span class="status-badge assigned">Assigned</span></td>
-      </tr>
-      <tr>
-        <td>Sunrise Mess</td>
-        <td>Chapati & Sabzi</td>
-        <td>18 Plates</td>
-        <td>Viman Nagar</td>
-        <td><span class="status-badge collected">Collected</span></td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Donor</th>
+          <th>Food Type</th>
+          <th>Quantity</th>
+          <th>Area</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="dashboardTableBody">
+        <tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">Loading...</td></tr>
+      </tbody>
     </table>
   </section>
 
@@ -138,14 +113,14 @@
         <li>Better monitoring through dashboard insights</li>
       </ul>
     </div>
-
     <div class="dashboard-extra-card">
-      <h2>Quick Summary</h2>
-      <p>
-        The platform is actively supporting food redistribution by connecting donors,
-        NGOs, and available food listings through a clean and easy-to-use interface.
-      </p>
-      <a href="food.html" class="btn">View Food Listings</a>
+      <h2>Quick Actions</h2>
+      <p>Jump to the most important parts of the platform.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <a href="donate.html" class="btn">Donate Food</a>
+        <a href="food.html" class="btn btn-outline">View Listings</a>
+        <a href="view-list.html" class="btn btn-outline">Manage All</a>
+      </div>
     </div>
   </section>
 
@@ -153,42 +128,115 @@
     <p>&copy; 2026 Food Donation Platform | Dashboard Insights</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
   <script>
-    const ctx = document.getElementById("donationChart");
+    setupRoleNavbar();
 
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        datasets: [{
-          label: "Donations",
-          data: [5, 7, 6, 8, 10, 7, 5],
-          backgroundColor: [
-            "#166534",
-            "#15803d",
-            "#16a34a",
-            "#22c55e",
-            "#4ade80",
-            "#86efac",
-            "#bbf7d0"
-          ],
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: false
-          }
+    let chartInstance = null;
+
+    function statusClass(status) {
+      const s = (status || "Pending").toLowerCase();
+      if (s === "completed") return "completed";
+      if (s === "accepted") return "accepted";
+      return "pending";
+    }
+
+    async function loadDashboard() {
+      const { data: donations, error } = await db
+        .from("donation")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) {
+        document.getElementById("dashboardTableBody").innerHTML =
+          `<tr><td colspan="5" style="color:red;text-align:center;">Error: ${error.message}</td></tr>`;
+        return;
+      }
+
+      let total = donations.length;
+      let pending = 0, accepted = 0, completed = 0, totalQty = 0;
+      const areas = new Set();
+      const ngoCounts = {};
+
+      donations.forEach(d => {
+        const status = d.status || "Pending";
+        totalQty += parseInt(d.quantity) || 0;
+        if (d.area) areas.add(d.area);
+        if (status === "Pending") pending++;
+        if (status === "Accepted") accepted++;
+        if (status === "Completed") completed++;
+        if (d.ngoSelect && d.ngoSelect.trim()) {
+          ngoCounts[d.ngoSelect] = (ngoCounts[d.ngoSelect] || 0) + 1;
+        }
+      });
+
+      // Stats
+      document.getElementById("statTotal").textContent = total;
+      document.getElementById("statPending").textContent = pending;
+      document.getElementById("statAccepted").textContent = accepted;
+      document.getElementById("statCompleted").textContent = completed;
+      document.getElementById("statFoodSaved").textContent = totalQty + " kg";
+      document.getElementById("statAreas").textContent = areas.size;
+
+      // Chart
+      if (chartInstance) chartInstance.destroy();
+      const ctx = document.getElementById("donationChart");
+      chartInstance = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Pending", "Accepted", "Completed"],
+          datasets: [{
+            data: [pending, accepted, completed],
+            backgroundColor: ["#f59e0b", "#3b82f6", "#22c55e"],
+            borderWidth: 0
+          }]
         },
-        scales: {
-          y: {
-            beginAtZero: true
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" }
           }
         }
+      });
+
+      // NGO mini list
+      const ngoList = document.getElementById("ngoMiniList");
+      const sortedNgos = Object.entries(ngoCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      if (sortedNgos.length === 0) {
+        ngoList.innerHTML = `<p style="color:#888;font-size:13px;">No NGO data yet.</p>`;
+      } else {
+        ngoList.innerHTML = sortedNgos.map(([name, count]) => `
+          <div class="ngo-mini-item">
+            <h4>${name}</h4>
+            <p>${count} donation${count > 1 ? "s" : ""} assigned</p>
+          </div>
+        `).join("");
       }
-    });
+
+      // Recent table (latest 10)
+      const tbody = document.getElementById("dashboardTableBody");
+      const recent = donations.slice(0, 10);
+      if (recent.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">No donations yet.</td></tr>`;
+      } else {
+        tbody.innerHTML = recent.map(d => `
+          <tr>
+            <td>${d.donorName || "Anonymous"}</td>
+            <td>${d.foodType || "-"}</td>
+            <td>${d.quantity || "-"}</td>
+            <td>${d.area || "-"}</td>
+            <td><span class="status-pill ${statusClass(d.status)}">${d.status || "Pending"}</span></td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    loadDashboard();
+    // Auto-refresh every 30 seconds
+    setInterval(loadDashboard, 30000);
   </script>
+
 </body>
 </html>

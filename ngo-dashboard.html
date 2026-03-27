@@ -13,12 +13,14 @@
       <h1>Food Donation Platform</h1>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="donate.html">Donate</a></li>
         <li><a href="food.html">Available Food</a></li>
         <li><a href="ngos.html">NGOs</a></li>
         <li><a href="view-list.html">View List</a></li>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="ngo-dashboard.html" class="active">NGO Dashboard</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html" class="active">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -142,9 +144,25 @@
     <p>&copy; 2026 Food Donation Platform | NGO Dashboard</p>
   </footer>
 
-  <script src="auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    .notif-bell { position:fixed; bottom:30px; right:30px; z-index:9999; }
+    .bell-btn { background:linear-gradient(135deg,#1d4ed8,#3b82f6); color:white; border:none; border-radius:50%; width:58px; height:58px; font-size:24px; cursor:pointer; box-shadow:0 8px 20px rgba(37,99,235,0.4); position:relative; }
+    .bell-badge { position:absolute; top:-4px; right:-4px; background:red; color:white; border-radius:50%; width:20px; height:20px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; display:none; }
+    .notif-panel { position:fixed; bottom:100px; right:30px; width:320px; background:white; border-radius:18px; box-shadow:0 16px 40px rgba(0,0,0,0.18); border:1px solid #dbeafe; display:none; z-index:9999; max-height:400px; overflow-y:auto; }
+    .notif-header { padding:16px 18px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; }
+    .notif-header h4 { color:#1d4ed8; margin:0; }
+    .notif-item { padding:14px 18px; border-bottom:1px solid #f1f5f9; font-size:14px; }
+    .notif-item.new { background:#eff6ff; }
+    .notif-item p { margin:0; color:#334155; }
+    .notif-item small { color:#94a3b8; }
+    .notif-empty { padding:20px; text-align:center; color:#94a3b8; }
+    .clear-notif { padding:12px; text-align:center; }
+    .clear-notif button { font-size:12px; padding:6px 14px; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
+  <script src="auth.js"></script>
 
   <script>
     protectPage(["ngo"]);
@@ -165,7 +183,7 @@
     }
 
     async function acceptDonation(id) {
-      const { error } = await supabase
+      const { error } = await db
         .from("donation")
         .update({ status: "Accepted" })
         .eq("id", id);
@@ -179,16 +197,21 @@
     }
 
     async function completeDonation(id) {
-      const { error } = await supabase
-        .from("donation")
-        .update({ status: "Completed" })
-        .eq("id", id);
+      // Mark NGO side as confirmed
+      const { error: e1 } = await db.from("donation").update({ ngo_confirmed: true }).eq("id", id);
+      if (e1) { alert("Error: " + e1.message); return; }
 
-      if (error) {
-        alert("Failed to complete donation: " + error.message);
-        return;
+      // Check if donor also confirmed
+      const { data, error: e2 } = await db.from("donation").select("donor_confirmed").eq("id", id).single();
+      if (e2) { alert("Error: " + e2.message); return; }
+
+      if (data.donor_confirmed) {
+        // Both confirmed — mark as Completed
+        await db.from("donation").update({ status: "Completed" }).eq("id", id);
+        alert("✅ Both sides confirmed. Donation marked as Completed!");
+      } else {
+        alert("✅ Your confirmation saved. Waiting for donor to confirm completion.");
       }
-
       loadNgoDashboard();
     }
 
@@ -202,7 +225,7 @@
       ngoDonationList.innerHTML = "";
       ngoActivityTimeline.innerHTML = "";
 
-      const { data: donations, error } = await supabase
+      const { data: donations, error } = await db
         .from("donation")
         .select("*")
         .order("id", { ascending: false });
@@ -253,9 +276,20 @@
           <p><strong>Pickup Address:</strong> ${donation.pickupAddress || "-"}</p>
           <p><strong>Expiry:</strong> ${donation.expiryTime || "-"}</p>
 
+          <div style="margin:8px 0;font-size:13px;">
+            <span style="color:${donation.ngo_confirmed ? '#22c55e' : '#f59e0b'}">
+              NGO: ${donation.ngo_confirmed ? '✅ Confirmed' : '⏳ Pending'}
+            </span>
+            &nbsp;|&nbsp;
+            <span style="color:${donation.donor_confirmed ? '#22c55e' : '#f59e0b'}">
+              Donor: ${donation.donor_confirmed ? '✅ Confirmed' : '⏳ Pending'}
+            </span>
+          </div>
+
           <div class="ngo-action-buttons">
-            <button class="btn" onclick="acceptDonation(${donation.id})">Accept</button>
-            <button class="btn ngo-complete-btn" onclick="completeDonation(${donation.id})">Complete</button>
+            ${status === "Pending" ? `<button class="btn" onclick="acceptDonation(${donation.id})">Accept</button>` : ""}
+            ${status === "Accepted" && !donation.ngo_confirmed ? `<button class="btn ngo-complete-btn" onclick="completeDonation(${donation.id})">Mark Complete</button>` : ""}
+            ${donation.ngo_confirmed && !donation.donor_confirmed ? `<span style="font-size:12px;color:#888;">Waiting for donor confirmation...</span>` : ""}
           </div>
         `;
         ngoDonationList.appendChild(card);
@@ -298,7 +332,75 @@
     }
 
     loadNgoDashboard();
+
+    // ---- REAL-TIME NOTIFICATIONS ----
+    let notifications = JSON.parse(localStorage.getItem("ngoNotifications") || "[]");
+    let panelOpen = false;
+
+    function toggleNotifPanel() {
+      panelOpen = !panelOpen;
+      document.getElementById("notifPanel").style.display = panelOpen ? "block" : "none";
+      if (panelOpen) {
+        document.getElementById("bellBadge").style.display = "none";
+        document.getElementById("bellBadge").textContent = "0";
+      }
+      renderNotifications();
+    }
+
+    function renderNotifications() {
+      const list = document.getElementById("notifList");
+      if (notifications.length === 0) {
+        list.innerHTML = `<div class="notif-empty">No new notifications</div>`;
+        return;
+      }
+      list.innerHTML = notifications.slice().reverse().map(n => `
+        <div class="notif-item new">
+          <p>🍱 <strong>${n.foodType || "Food"}</strong> donated by ${n.donorName || "Someone"}</p>
+          <p>Qty: ${n.quantity || "-"} • Area: ${n.area || "-"}</p>
+          <small>${new Date(n.time).toLocaleTimeString()}</small>
+        </div>
+      `).join("");
+    }
+
+    function clearNotifications() {
+      notifications = [];
+      localStorage.setItem("ngoNotifications", "[]");
+      renderNotifications();
+      document.getElementById("bellBadge").style.display = "none";
+    }
+
+    function showBadge() {
+      const badge = document.getElementById("bellBadge");
+      const count = parseInt(badge.textContent || "0") + 1;
+      badge.textContent = count;
+      badge.style.display = "flex";
+    }
+
+    // Subscribe to real-time new donations
+    db.channel("ngo-new-donations")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "donation" }, (payload) => {
+        const d = payload.new;
+        notifications.push({ ...d, time: new Date().toISOString() });
+        localStorage.setItem("ngoNotifications", JSON.stringify(notifications));
+        showBadge();
+        if (panelOpen) renderNotifications();
+        loadNgoDashboard();
+      })
+      .subscribe();
   </script>
+
+  <!-- Notification Bell -->
+  <div class="notif-bell">
+    <button class="bell-btn" onclick="toggleNotifPanel()">🔔<span class="bell-badge" id="bellBadge">0</span></button>
+  </div>
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <h4>🔔 New Donations</h4>
+      <button class="btn btn-outline" style="padding:4px 10px;font-size:12px;" onclick="toggleNotifPanel()">✕</button>
+    </div>
+    <div id="notifList"><div class="notif-empty">No new notifications</div></div>
+    <div class="clear-notif"><button class="btn btn-outline" onclick="clearNotifications()">Clear All</button></div>
+  </div>
 
 </body>
 </html>

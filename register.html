@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - Food Donation Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <nav class="navbar">
+      <h1>Food Donation Platform</h1>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="food.html">Available Food</a></li>
+        <li><a href="ngos.html">NGOs</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html" class="active">Register</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="login-premium-page">
+    <div class="login-premium-card">
+
+      <div class="login-premium-left">
+        <span class="login-premium-tag">Join Our Platform</span>
+        <h2>Create Your Account</h2>
+        <p>Register as a donor, NGO, or admin to start making a difference in your community.</p>
+
+        <div class="role-preview-grid">
+          <div class="role-preview-card donor-role">
+            <h3>Donor</h3>
+            <p>Donate surplus food and track your contributions.</p>
+          </div>
+          <div class="role-preview-card ngo-role">
+            <h3>NGO / Receiver</h3>
+            <p>Accept food requests and coordinate pickups.</p>
+          </div>
+          <div class="role-preview-card admin-role">
+            <h3>Admin</h3>
+            <p>Manage the full platform and all users.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-premium-right">
+        <div class="login-form-box">
+          <h3>Create Account</h3>
+          <p class="login-subtext">Fill in your details to get started.</p>
+
+          <form id="registerForm" class="modern-form">
+            <div class="form-group">
+              <label for="regName">Full Name</label>
+              <input type="text" id="regName" placeholder="Enter your full name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="regEmail">Email</label>
+              <input type="email" id="regEmail" placeholder="Enter your email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="regPassword">Password</label>
+              <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6" />
+            </div>
+
+            <div class="form-group">
+              <label for="regRole">Select Role</label>
+              <select id="regRole" required>
+                <option value="">Choose your role</option>
+                <option value="donor">Donor</option>
+                <option value="ngo">Receiver / NGO</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn login-btn" id="registerBtn">Create Account</button>
+          </form>
+
+          <p id="registerMessage" class="success-message"></p>
+
+          <p style="margin-top:15px; font-size:13px; text-align:center;">
+            Already have an account? <a href="login.html" style="color:#22c55e;">Login here</a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Food Donation Platform | Register</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script>
+    const registerForm = document.getElementById("registerForm");
+    const registerMessage = document.getElementById("registerMessage");
+    const registerBtn = document.getElementById("registerBtn");
+
+    registerForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("regName").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value;
+      const role = document.getElementById("regRole").value;
+
+      if (!role) {
+        registerMessage.style.color = "red";
+        registerMessage.textContent = "❌ Please select a role.";
+        return;
+      }
+
+      registerBtn.textContent = "Creating account...";
+      registerBtn.disabled = true;
+      registerMessage.textContent = "";
+
+      // Sign up — pass role+name in metadata so we can save it even before email confirm
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name, role }
+        }
+      });
+
+      if (error) {
+        registerMessage.style.color = "red";
+        registerMessage.textContent = "❌ " + error.message;
+        registerBtn.textContent = "Create Account";
+        registerBtn.disabled = false;
+        return;
+      }
+
+      const user = data.user;
+
+      if (user) {
+        // Insert profile — works even without email confirmation when RLS allows it
+        await db.from("profiles").upsert([
+          { id: user.id, email: user.email, name, role }
+        ]);
+      }
+
+      registerMessage.style.color = "green";
+      registerMessage.textContent = "✅ Account created! Redirecting to login...";
+      registerBtn.textContent = "Create Account";
+      registerBtn.disabled = false;
+      registerForm.reset();
+
+      setTimeout(() => { window.location.href = "login.html"; }, 2000);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,115 +1,54 @@
-function getDonations() {
-  return JSON.parse(localStorage.getItem("donations")) || [];
-}
-
-function saveDonations(donations) {
-  localStorage.setItem("donations", JSON.stringify(donations));
-}
-
 document.addEventListener("DOMContentLoaded", function () {
-  // Use existing Supabase client from supabase.js
-  if (!window.supabase && !window.supabaseClient && !window.supabase?.createClient) {
-    console.error("Supabase library not loaded.");
+  if (typeof db === "undefined") {
+    console.error("Supabase client not loaded.");
+    return;
   }
 
-  // If supabase.js created global const supabase, it will already be available
-  // This fallback is only for safety if needed.
-  let db = null;
-  if (typeof supabase !== "undefined"){
-    db = supabase;
-  } else if (window.supabaseClient);{
-    db = window.supabaseClient;
-  } else if (window.supabase && window.supabaseClient){
-    const SUPABASE_URL = "https://ncjbzcohbupbaicwlbov.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jamJ6Y29oYnVwYmFpY3dsYm92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMDkxMTAsImV4cCI6MjA4OTY4NTExMH0.nYzspsW6ePv264-ILjoM4N6KYsCrJ720QSc44vuWZNA";
-    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  }
- 
   const form = document.getElementById("donationForm");
   const donationMessage = document.getElementById("donationMessage");
   const table = document.getElementById("donationTable");
 
-  const foodSearch = document.getElementById("foodSearch");
-  const foodFilter = document.getElementById("foodFilter");
-  const foodCards = document.querySelectorAll(".food-card");
-
-  const ngoSearch = document.getElementById("ngoSearch");
-  const ngoFilter = document.getElementById("ngoFilter");
-  const ngoCards = document.querySelectorAll(".ngo-card");
-
   // ---------------- FORM SUBMIT ----------------
-  if (form && db) {
+  if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const donation = {
-        donorName: document.getElementById("donorName")?.value || "Anonymous",
-        contactNumber: document.getElementById("contactNumber")?.value || "",
-        foodType: document.getElementById("foodType")?.value || "",
+        donorName: document.getElementById("donorName")?.value.trim() || "Anonymous",
+        contactNumber: document.getElementById("contactNumber")?.value.trim() || "",
+        foodType: document.getElementById("foodType")?.value.trim() || "",
         quantity: parseInt(document.getElementById("quantity")?.value) || 1,
-        expiryTime: document.getElementById("expiryTime")?.value || "",
-        pickupAddress: document.getElementById("pickupAddress")?.value || "",
+        expiryTime: document.getElementById("expiryTime")?.value.trim() || "",
+        pickupAddress: document.getElementById("pickupAddress")?.value.trim() || "",
         area: document.getElementById("area")?.value || "",
         ngoSelect: document.getElementById("ngoSelect")?.value || "",
-        notes: document.getElementById("notes")?.value || "",
+        notes: document.getElementById("notes")?.value.trim() || "",
         status: "Pending"
       };
 
-      console.log("DONATION:", donation);
-
       const { data, error } = await db
         .from("donation")
-        .insert([
-          {
-            donorName: donation.donorName,
-            contactNumber: donation.contactNumber,
-            foodType: donation.foodType,
-            quantity: donation.quantity,
-            expiryTime: donation.expiryTime,
-            pickupAddress: donation.pickupAddress,
-            area: donation.area,
-            ngoSelect: donation.ngoSelect,
-            notes: donation.notes,
-            status: donation.status
-          }
-        ])
+        .insert([donation])
         .select();
-
-      console.log("DATA:", data);
 
       if (error) {
         console.error("SUPABASE ERROR:", error);
-        alert("Donation failed to save: " + error.message);
+        if (donationMessage) {
+          donationMessage.style.color = "red";
+          donationMessage.textContent = "❌ Failed: " + error.message;
+        } else {
+          alert("Donation failed: " + error.message);
+        }
         return;
       }
 
-      // localStorage backup for pages still using local data
-      const donations = getDonations();
-      donations.push({
-        donorName: donation.donorName,
-        contactNumber: donation.contactNumber,
-        foodType: donation.foodType,
-        quantity: donation.quantity,
-        expiryTime: donation.expiryTime,
-        pickupAddress: donation.pickupAddress,
-        area: donation.area,
-        ngoSelect: donation.ngoSelect || "Auto Match",
-        notes: donation.notes,
-        status: donation.status,
-        createdAt: new Date().toISOString()
-      });
-      saveDonations(donations);
-
-      console.log("SUCCESS:", data);
-
       if (donationMessage) {
+        donationMessage.style.color = "green";
         donationMessage.textContent = "✅ Donation submitted successfully!";
-      } else {
-        alert("✅ Donation submitted successfully!");
+        setTimeout(() => { donationMessage.textContent = ""; }, 4000);
       }
 
       form.reset();
-
       await loadTableData();
       await updateImpactStats();
       await loadActivityFeed();
@@ -118,24 +57,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ---------------- LOAD TABLE ----------------
   async function loadTableData() {
-    if (!table || !db) return;
+    if (!table) return;
 
     const { data, error } = await db
       .from("donation")
       .select("*")
       .order("id", { ascending: false });
 
-    if (error) {
-      console.error("TABLE FETCH ERROR:", error);
-      return;
-    }
+    if (error) { console.error("TABLE FETCH ERROR:", error); return; }
 
-    console.log("Fetched data:", data);
     table.innerHTML = "";
-
     data.forEach((d) => {
       const row = document.createElement("tr");
-
       row.innerHTML = `
         <td>${d.foodType || "-"}</td>
         <td>${d.quantity || "-"}</td>
@@ -144,25 +77,18 @@ document.addEventListener("DOMContentLoaded", function () {
         <td><button onclick="acceptFood('${d.id}')">Accept</button></td>
         <td>${d.status || "Pending"}</td>
       `;
-
       table.appendChild(row);
     });
   }
 
   // ---------------- ACCEPT FOOD ----------------
   window.acceptFood = async function (id) {
-    if (!db) return;
-
     const { error } = await db
       .from("donation")
       .update({ status: "Accepted" })
       .eq("id", id);
 
-    if (error) {
-      console.error("ACCEPT ERROR:", error);
-      return;
-    }
-
+    if (error) { console.error("ACCEPT ERROR:", error); return; }
     await loadTableData();
     await updateImpactStats();
     await loadActivityFeed();
@@ -170,46 +96,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ---------------- IMPACT STATS ----------------
   async function updateImpactStats() {
-    if (!db) return;
-
-    const { data, error } = await db
-      .from("donation")
-      .select("*");
-
-    if (error) {
-      console.error("IMPACT STATS ERROR:", error);
-      return;
-    }
-
     const mealsDonatedEl = document.getElementById("mealsDonated");
     const partnerNgosEl = document.getElementById("partnerNgos");
     const foodSavedEl = document.getElementById("foodSaved");
     const activeDonorsEl = document.getElementById("activeDonors");
 
-    if (!mealsDonatedEl || !partnerNgosEl || !foodSavedEl || !activeDonorsEl) return;
+    if (!mealsDonatedEl) return;
+
+    const { data, error } = await db.from("donation").select("*");
+    if (error) { console.error("IMPACT STATS ERROR:", error); return; }
 
     let totalMeals = 0;
     const donors = new Set();
     const ngos = new Set();
 
     data.forEach((d) => {
-      const qty = parseInt(d.quantity) || 0;
-      totalMeals += qty;
-
+      totalMeals += parseInt(d.quantity) || 0;
       if (d.donorName) donors.add(d.donorName);
       if (d.ngoSelect) ngos.add(d.ngoSelect);
     });
 
     mealsDonatedEl.textContent = totalMeals;
-    partnerNgosEl.textContent = ngos.size;
-    foodSavedEl.textContent = totalMeals + " kg";
-    activeDonorsEl.textContent = donors.size;
+    if (partnerNgosEl) partnerNgosEl.textContent = ngos.size;
+    if (foodSavedEl) foodSavedEl.textContent = totalMeals + " kg";
+    if (activeDonorsEl) activeDonorsEl.textContent = donors.size;
   }
 
   // ---------------- ACTIVITY FEED ----------------
   async function loadActivityFeed() {
     const feed = document.getElementById("activityFeed");
-    if (!feed || !db) return;
+    if (!feed) return;
 
     const { data, error } = await db
       .from("donation")
@@ -217,19 +133,12 @@ document.addEventListener("DOMContentLoaded", function () {
       .order("id", { ascending: false })
       .limit(5);
 
-    if (error) {
-      console.error("ACTIVITY FEED ERROR:", error);
-      return;
-    }
+    if (error) { console.error("ACTIVITY FEED ERROR:", error); return; }
 
     feed.innerHTML = "";
 
     if (!data || data.length === 0) {
-      feed.innerHTML = `
-        <div class="feed-item">
-          No live donation activity yet.
-        </div>
-      `;
+      feed.innerHTML = `<div class="feed-item">No live donation activity yet.</div>`;
       return;
     }
 
@@ -245,52 +154,30 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // ---------------- FILTERS ----------------
-  if (foodSearch && foodFilter) {
-    function filterFoodCards() {
-      const searchValue = foodSearch.value.toLowerCase();
-      const selectedStatus = foodFilter.value;
+  // ---------------- NGO FILTER ----------------
+  const ngoSearch = document.getElementById("ngoSearch");
+  const ngoFilter = document.getElementById("ngoFilter");
+  const ngoCards = document.querySelectorAll(".ngo-card");
 
-      foodCards.forEach((card) => {
-        const text = card.innerText.toLowerCase();
-        const status = card.getAttribute("data-status");
-
-        card.style.display =
-          text.includes(searchValue) &&
-          (selectedStatus === "all" || status === selectedStatus)
-            ? "block"
-            : "none";
-      });
-    }
-
-    foodSearch.addEventListener("keyup", filterFoodCards);
-    foodFilter.addEventListener("change", filterFoodCards);
-  }
-
-  if (ngoSearch && ngoFilter) {
+  if (ngoSearch && ngoFilter && ngoCards.length) {
     function filterNGOs() {
       const searchValue = ngoSearch.value.toLowerCase();
       const selectedArea = ngoFilter.value;
-
       ngoCards.forEach((card) => {
         const text = card.innerText.toLowerCase();
         const area = card.getAttribute("data-area");
-
         card.style.display =
           text.includes(searchValue) &&
           (selectedArea === "all" || area === selectedArea)
-            ? "block"
-            : "none";
+            ? "block" : "none";
       });
     }
-
     ngoSearch.addEventListener("keyup", filterNGOs);
     ngoFilter.addEventListener("change", filterNGOs);
   }
 
-  // ---------------- INITIAL LOAD ----------------
+  // Init on page load
   loadTableData();
   updateImpactStats();
   loadActivityFeed();
-  setInterval(loadActivityFeed, 600000);
 });

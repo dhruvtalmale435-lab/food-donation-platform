@@ -5,9 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Donate Food - Food Donation Platform</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .otp-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .otp-overlay.active { display: flex; }
+    .otp-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 32px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .otp-box h3 { margin-bottom: 8px; color: #166534; font-size: 20px; }
+    .otp-box p { color: #555; font-size: 14px; margin-bottom: 20px; }
+    .otp-box input {
+      width: 100%;
+      padding: 12px;
+      font-size: 22px;
+      letter-spacing: 8px;
+      text-align: center;
+      border: 2px solid #22c55e;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .otp-box .btn { width: 100%; margin-bottom: 10px; }
+    .otp-timer { font-size: 13px; color: #888; margin-bottom: 10px; }
+    .otp-msg { font-size: 13px; min-height: 20px; }
+  </style>
 </head>
 <body>
+
   <header>
     <nav class="navbar">
       <h1>Food Donation Platform</h1>
@@ -15,17 +52,32 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="donate.html" class="active">Donate</a></li>
         <li><a href="food.html">Available Food</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
         <li><a href="ngos.html">NGOs</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
       </ul>
     </nav>
   </header>
 
+  <!-- OTP Modal -->
+  <div class="otp-overlay" id="otpOverlay">
+    <div class="otp-box">
+      <h3>📱 Verify Mobile Number</h3>
+      <p id="otpSubtext">Enter the 6-digit OTP sent to your number</p>
+      <input type="text" id="otpInput" maxlength="6" placeholder="------" />
+      <div class="otp-timer" id="otpTimer"></div>
+      <button class="btn" id="verifyOtpBtn" onclick="verifyOTP()">Verify & Submit</button>
+      <button class="btn btn-outline" onclick="resendOTP()">Resend OTP</button>
+      <p class="otp-msg" id="otpMsg"></p>
+    </div>
+  </div>
+
   <section class="page-hero donate-hero">
     <h2>Donate Surplus Food</h2>
-    <p>
-      This donation form is available only for logged-in donors.
-    </p>
+    <p>Fill the form below. Your mobile number will be verified before submission.</p>
   </section>
 
   <section class="donate-wrapper">
@@ -39,7 +91,6 @@
           <li>Supports people in need</li>
         </ul>
       </div>
-
       <div class="donate-info-card">
         <h3>Donation Tips</h3>
         <ul>
@@ -60,10 +111,10 @@
             <label for="donorName">Donor Name</label>
             <input type="text" id="donorName" placeholder="Enter your name or organization" required />
           </div>
-
           <div class="form-group">
             <label for="contactNumber">Contact Number</label>
-            <input type="tel" id="contactNumber" placeholder="Enter contact number" required />
+            <input type="tel" id="contactNumber" placeholder="Enter 10-digit number" required />
+            <small id="otpVerifiedBadge" style="color:#22c55e;display:none;">✅ Number Verified</small>
           </div>
         </div>
 
@@ -72,7 +123,6 @@
             <label for="foodType">Food Type</label>
             <input type="text" id="foodType" placeholder="Enter food type" required />
           </div>
-
           <div class="form-group">
             <label for="quantity">Quantity</label>
             <input type="number" id="quantity" placeholder="Enter quantity" min="1" required />
@@ -90,10 +140,9 @@
               <option>Snacks</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="expiryTime">Expiry Time</label>
-            <input type="text" id="expiryTime" placeholder="Enter expiry time" required />
+            <input type="text" id="expiryTime" placeholder="e.g. 3 hours / 6 PM today" required />
           </div>
         </div>
 
@@ -114,7 +163,6 @@
               <option>Pimpri</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="ngoSelect">Preferred NGO</label>
             <select id="ngoSelect">
@@ -132,7 +180,7 @@
           <textarea id="notes" rows="3" placeholder="Any extra details about the food"></textarea>
         </div>
 
-        <button type="submit" class="btn donate-btn">Submit Donation</button>
+        <button type="submit" class="btn donate-btn" id="submitBtn">Send OTP & Submit</button>
       </form>
 
       <p id="donationMessage" class="success-message"></p>
@@ -143,14 +191,179 @@
     <p>&copy; 2026 Food Donation Platform | Donate food, share hope</p>
   </footer>
 
-  <script src="auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
-  <script src="script.js"></script>
+  <script src="auth.js"></script>
 
   <script>
     protectPage(["donor"]);
     setupRoleNavbar();
+
+    // Auto-fill donor name
+    const savedName = localStorage.getItem("userName");
+    if (savedName) document.getElementById("donorName").value = savedName;
+
+    let otpVerified = false;
+    let generatedOTP = "";
+    let otpTimerInterval = null;
+    let savedFormData = null; // stores form data before OTP modal opens
+
+    function generateOTP() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    function startOTPTimer(seconds) {
+      clearInterval(otpTimerInterval);
+      const timerEl = document.getElementById("otpTimer");
+      let remaining = seconds;
+      timerEl.textContent = `OTP expires in ${remaining}s`;
+      otpTimerInterval = setInterval(() => {
+        remaining--;
+        timerEl.textContent = `OTP expires in ${remaining}s`;
+        if (remaining <= 0) {
+          clearInterval(otpTimerInterval);
+          timerEl.textContent = "OTP expired. Please resend.";
+          generatedOTP = "";
+        }
+      }, 1000);
+    }
+
+    function captureFormData() {
+      // Save all form values into a variable BEFORE modal opens
+      savedFormData = {
+        donorName: document.getElementById("donorName").value.trim() || "Anonymous",
+        contactNumber: document.getElementById("contactNumber").value.trim(),
+        foodType: document.getElementById("foodType").value.trim(),
+        quantity: parseInt(document.getElementById("quantity").value) || 1,
+        expiryTime: document.getElementById("expiryTime").value.trim(),
+        pickupAddress: document.getElementById("pickupAddress").value.trim(),
+        area: document.getElementById("area").value,
+        ngoSelect: document.getElementById("ngoSelect").value,
+        notes: document.getElementById("notes").value.trim(),
+        status: "Pending",
+        user_id: localStorage.getItem("userId") || null,
+        donorEmail: localStorage.getItem("userEmail") || ""
+      };
+    }
+
+    function sendOTP() {
+      const phone = document.getElementById("contactNumber").value.trim();
+      if (!/^\d{10}$/.test(phone)) {
+        alert("Please enter a valid 10-digit mobile number first.");
+        return;
+      }
+
+      // Capture all form data NOW before modal opens
+      captureFormData();
+
+      generatedOTP = generateOTP();
+      document.getElementById("otpSubtext").textContent = `OTP sent to +91 ${phone}`;
+      document.getElementById("otpMsg").textContent = "";
+      document.getElementById("otpInput").value = "";
+      document.getElementById("otpOverlay").classList.add("active");
+      startOTPTimer(120);
+
+      setTimeout(() => {
+        alert(`📱 Demo OTP for ${phone}: ${generatedOTP}\n\n(In production this would be sent via SMS)`);
+      }, 300);
+    }
+
+    function verifyOTP() {
+      const entered = document.getElementById("otpInput").value.trim();
+      const msgEl = document.getElementById("otpMsg");
+
+      if (!generatedOTP) {
+        msgEl.style.color = "red";
+        msgEl.textContent = "OTP expired. Please resend.";
+        return;
+      }
+
+      if (entered === generatedOTP) {
+        otpVerified = true;
+        clearInterval(otpTimerInterval);
+        document.getElementById("otpOverlay").classList.remove("active");
+        document.getElementById("submitBtn").textContent = "✅ Verified - Submitting...";
+        document.getElementById("submitBtn").disabled = true;
+        submitDonation();
+      } else {
+        msgEl.style.color = "red";
+        msgEl.textContent = "❌ Wrong OTP. Try again.";
+      }
+    }
+
+    function resendOTP() {
+      // Re-capture form data in case anything changed
+      captureFormData();
+      generatedOTP = generateOTP();
+      document.getElementById("otpMsg").textContent = "";
+      document.getElementById("otpInput").value = "";
+      startOTPTimer(120);
+      alert(`📱 New Demo OTP: ${generatedOTP}`);
+    }
+
+    document.getElementById("otpInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") verifyOTP();
+    });
+
+    document.getElementById("donationForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (!otpVerified) {
+        const phone = document.getElementById("contactNumber").value.trim();
+        if (!/^\d{10}$/.test(phone)) {
+          alert("Please enter a valid 10-digit mobile number.");
+          return;
+        }
+        sendOTP();
+      } else {
+        submitDonation();
+      }
+    });
+
+    async function submitDonation() {
+      const submitBtn = document.getElementById("submitBtn");
+      const donationMessage = document.getElementById("donationMessage");
+
+      if (!savedFormData || !savedFormData.foodType || !savedFormData.pickupAddress || !savedFormData.area) {
+        donationMessage.style.color = "red";
+        donationMessage.textContent = "❌ Form data missing. Please fill the form and verify OTP again.";
+        otpVerified = false;
+        generatedOTP = "";
+        document.getElementById("submitBtn").textContent = "Send OTP & Submit";
+        document.getElementById("submitBtn").disabled = false;
+        return;
+      }
+
+      submitBtn.textContent = "Submitting...";
+      submitBtn.disabled = true;
+
+      const { error } = await db.from("donation").insert([savedFormData]);
+
+      submitBtn.textContent = "Submit Donation";
+      submitBtn.disabled = false;
+
+      if (error) {
+        donationMessage.style.color = "red";
+        donationMessage.textContent = "❌ Failed: " + error.message;
+        return;
+      }
+
+      donationMessage.style.color = "green";
+      donationMessage.textContent = "✅ Donation submitted successfully!";
+
+      // Reset everything including OTP state for next submission
+      document.getElementById("donationForm").reset();
+      savedFormData = null;
+      otpVerified = false;
+      generatedOTP = "";
+      clearInterval(otpTimerInterval);
+      document.getElementById("otpVerifiedBadge").style.display = "none";
+      document.getElementById("submitBtn").textContent = "Send OTP & Submit";
+      document.getElementById("submitBtn").disabled = false;
+      if (savedName) document.getElementById("donorName").value = savedName;
+
+      setTimeout(() => { donationMessage.textContent = ""; }, 4000);
+    }
   </script>
+
 </body>
 </html>

@@ -13,10 +13,13 @@
       <h1>Food Donation Platform</h1>
       <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="donate.html">Donate</a></li>
         <li><a href="food.html" class="active">Available Food</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
         <li><a href="ngos.html">NGOs</a></li>
+        <li id="navDonorDashboard"><a href="donor-dashboard.html">Donor Dashboard</a></li>
+        <li id="navNgoDashboard"><a href="ngo-dashboard.html">NGO Dashboard</a></li>
+        <li id="navAdminDashboard"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+        <li id="navLogin"><a href="login.html">Login</a></li>
+        <li id="navLogout"><a href="#" onclick="logoutUser()">Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -43,9 +46,9 @@
     <p>&copy; 2026 Food Donation Platform | Smart food redistribution for Pune</p>
   </footer>
 
-  <script src="auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
 
   <script>
@@ -61,7 +64,7 @@
 
       foodList.innerHTML = `<p style="padding:20px;">Loading food listings...</p>`;
 
-      const { data: donations, error } = await supabase
+      const { data: donations, error } = await db
         .from("donation")
         .select("*")
         .eq("status", "Pending")

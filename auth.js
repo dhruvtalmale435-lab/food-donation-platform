@@ -1,4 +1,3 @@
-
 function getUserRole() {
   return localStorage.getItem("userRole");
 }
@@ -7,9 +6,13 @@ function getUserEmail() {
   return localStorage.getItem("userEmail");
 }
 
-function logoutUser() {
+async function logoutUser() {
+  if (typeof db !== "undefined") {
+    await db.auth.signOut();
+  }
   localStorage.removeItem("userRole");
   localStorage.removeItem("userEmail");
+  localStorage.removeItem("userId");
   window.location.href = "login.html";
 }
 
@@ -17,18 +20,16 @@ function protectPage(allowedRoles) {
   const role = getUserRole();
 
   if (!role) {
-    window.location.href = "donor-access.html";
+    window.location.href = "login.html";
     return;
   }
 
   if (!allowedRoles.includes(role)) {
-    if (allowedRoles.includes("donor")) {
-      window.location.href = "donor-access.html";
-    } else {
-      window.location.href = "login.html";
-    }
+    if (role === "donor") window.location.href = "donor-dashboard.html";
+    else if (role === "ngo") window.location.href = "ngo-dashboard.html";
+    else if (role === "admin") window.location.href = "admin-dashboard.html";
+    else window.location.href = "login.html";
   }
-
 }
 
 function setupRoleNavbar() {
@@ -39,7 +40,6 @@ function setupRoleNavbar() {
   const adminLink = document.getElementById("navAdminDashboard");
   const loginLink = document.getElementById("navLogin");
   const logoutLink = document.getElementById("navLogout");
-  const donateLink = document.getElementById("navDonate");
 
   if (donorLink) donorLink.style.display = "none";
   if (ngoLink) ngoLink.style.display = "none";
@@ -58,5 +58,26 @@ function setupRoleNavbar() {
   if (role === "ngo" && ngoLink) ngoLink.style.display = "inline-block";
   if (role === "admin" && adminLink) adminLink.style.display = "inline-block";
 
-  if (role === "ngo" && donateLink) donateLink.style.display = "none";
+  // Add profile link dynamically if not present
+  const existingProfile = document.getElementById("navProfile");
+  if (!existingProfile) {
+    const profileLi = document.createElement("li");
+    profileLi.id = "navProfile";
+    profileLi.innerHTML = `<a href="profile.html">👤 Profile</a>`;
+    logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
+  }
+
+  // Hide Available Food and Donate links for admin
+  if (role === "admin") {
+    document.querySelectorAll("a[href='food.html'], a[href='donate.html']").forEach(el => {
+      if (el.parentElement) el.parentElement.style.display = "none";
+    });
+  }
+
+  // Hide Donate link for NGO
+  if (role === "ngo") {
+    document.querySelectorAll("a[href='donate.html']").forEach(el => {
+      if (el.parentElement) el.parentElement.style.display = "none";
+    });
+  }
 }
