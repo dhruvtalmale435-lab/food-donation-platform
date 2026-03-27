@@ -65,20 +65,6 @@ function setupRoleNavbar() {
   if (profileLink) profileLink.style.display = "inline-block";
   if (liveMapLink) liveMapLink.style.display = "inline-block";
 
-  // Inject dynamically if not in HTML (for pages that don't have them)
-  if (!profileLink) {
-    const profileLi = document.createElement("li");
-    profileLi.id = "navProfile";
-    profileLi.innerHTML = '<a href="profile.html">👤 Profile</a>';
-    logoutLink.parentElement.parentElement.insertBefore(profileLi, logoutLink.parentElement);
-  }
-  if (!liveMapLink) {
-    const mapLi = document.createElement("li");
-    mapLi.id = "navLiveMap";
-    mapLi.innerHTML = '<a href="live-tracking.html">📍 Live Map</a>';
-    logoutLink.parentElement.parentElement.insertBefore(mapLi, logoutLink.parentElement);
-  }
-
   // Hide Available Food and Donate links for admin
   if (role === "admin") {
     document.querySelectorAll("a[href='food.html'], a[href='donate.html']").forEach(el => {
