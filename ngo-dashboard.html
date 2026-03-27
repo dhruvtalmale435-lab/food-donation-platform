@@ -192,18 +192,20 @@
     let donorRatings = JSON.parse(localStorage.getItem("donorRatings") || "{}");
 
     async function rateDonor(donationId, donorName, donorUserId, stars) {
-      const ngoUserId = localStorage.getItem("userId");
+      const ngoUserId = localStorage.getItem("userId") || "";
+      const cleanDonorId = (donorUserId || "").trim() || null;
+      const cleanNgoId = ngoUserId.trim() || null;
+
       const { error } = await db.from("donor_ratings").upsert([{
         donation_id: donationId,
-        donor_user_id: donorUserId,
-        ngo_user_id: ngoUserId,
+        donor_user_id: cleanDonorId,
+        ngo_user_id: cleanNgoId,
         donor_name: donorName,
         stars
       }]);
       if (error) { alert("Rating failed: " + error.message); return; }
       donorRatings[donationId] = stars;
       localStorage.setItem("donorRatings", JSON.stringify(donorRatings));
-      // Update UI
       const ratingBox = document.getElementById("rating-" + donationId);
       if (ratingBox) {
         ratingBox.innerHTML = `<span class="rated-badge">⭐ Rated ${stars}/5 — Thank you!</span>`;
@@ -213,6 +215,8 @@
     function buildRatingBox(donation) {
       if (donation.status !== "Completed") return "";
       const existingRating = donorRatings[donation.id];
+      const dName = (donation.donorName || "Anonymous").replace(/'/g, "&#39;");
+      const dUserId = (donation.user_id || "").trim();
       if (existingRating) {
         return `<div class="donor-rating-box"><div id="rating-${donation.id}"><span class="rated-badge">⭐ You rated this donor ${existingRating}/5</span></div></div>`;
       }
@@ -220,11 +224,11 @@
         <div class="donor-rating-box">
           <p>⭐ Rate Donor: <strong>${donation.donorName || "Anonymous"}</strong></p>
           <div class="star-rate" id="rating-${donation.id}">
-            <span onclick="rateDonor(${donation.id}, '${(donation.donorName||'').replace(/'/g,"\\'")}',' ${donation.user_id || ""}', 1)" title="1 star">⭐</span>
-            <span onclick="rateDonor(${donation.id}, '${(donation.donorName||'').replace(/'/g,"\\'")}',' ${donation.user_id || ""}', 2)" title="2 stars">⭐</span>
-            <span onclick="rateDonor(${donation.id}, '${(donation.donorName||'').replace(/'/g,"\\'")}',' ${donation.user_id || ""}', 3)" title="3 stars">⭐</span>
-            <span onclick="rateDonor(${donation.id}, '${(donation.donorName||'').replace(/'/g,"\\'")}',' ${donation.user_id || ""}', 4)" title="4 stars">⭐</span>
-            <span onclick="rateDonor(${donation.id}, '${(donation.donorName||'').replace(/'/g,"\\'")}',' ${donation.user_id || ""}', 5)" title="5 stars">⭐</span>
+            <span onclick="rateDonor(${donation.id},'${dName}','${dUserId}',1)" title="1 star">⭐</span>
+            <span onclick="rateDonor(${donation.id},'${dName}','${dUserId}',2)" title="2 stars">⭐</span>
+            <span onclick="rateDonor(${donation.id},'${dName}','${dUserId}',3)" title="3 stars">⭐</span>
+            <span onclick="rateDonor(${donation.id},'${dName}','${dUserId}',4)" title="4 stars">⭐</span>
+            <span onclick="rateDonor(${donation.id},'${dName}','${dUserId}',5)" title="5 stars">⭐</span>
           </div>
         </div>`;
     }
