@@ -79,10 +79,6 @@
             <h3>👥 Community Receiver</h3>
             <p>No registration needed. Phone OTP + Aadhaar verification. Limited access with admin approval per request.</p>
           </div>
-          <div class="role-preview-card admin-role">
-            <h3>⚙️ Admin</h3>
-            <p>Full platform control and verification authority.</p>
-          </div>
         </div>
 
         <div style="margin-top:16px;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px;font-size:13px;color:#e2e8f0;">
@@ -130,7 +126,7 @@
               <!-- Role Selection -->
               <div class="form-group">
                 <label>Select Your Role</label>
-                <div class="role-select-grid">
+                <div class="role-select-grid" style="grid-template-columns:1fr 1fr 1fr;">
                   <div class="role-btn" onclick="selectRole('donor')" id="btn-donor">
                     <h4>🍱 Donor</h4>
                     <p>Donate food</p>
@@ -142,10 +138,6 @@
                   <div class="role-btn" onclick="selectRole('community')" id="btn-community">
                     <h4>👥 Community Receiver</h4>
                     <p>Limited access</p>
-                  </div>
-                  <div class="role-btn" onclick="selectRole('admin')" id="btn-admin">
-                    <h4>⚙️ Admin</h4>
-                    <p>Platform control</p>
                   </div>
                 </div>
                 <input type="hidden" id="regRole" required/>
@@ -269,7 +261,7 @@
     function selectRole(role) {
       selectedRole = role;
       document.getElementById("regRole").value = role;
-      ["donor","ngo","community","admin"].forEach(r => {
+      ["donor","ngo","community"].forEach(r => {
         document.getElementById("btn-" + r).className = "role-btn";
       });
       document.getElementById("btn-" + role).className = "role-btn selected-" + role;

@@ -142,9 +142,10 @@
   <script>
     setupRoleNavbar();
     const role = localStorage.getItem("userRole");
-    if (role === "ngo") {
-      document.querySelectorAll(".ngo-card button").forEach(btn => btn.style.display = "none");
-    }
+    // Show Request Pickup only for donors, hide for everyone else
+    document.querySelectorAll(".ngo-card button").forEach(btn => {
+      btn.style.display = (role === "donor") ? "block" : "none";
+    });
 
     // NGO Rating
     async function submitRating(ngoName, stars) {

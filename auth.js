@@ -18,12 +18,7 @@ async function logoutUser() {
 
 function protectPage(allowedRoles) {
   const role = getUserRole();
-
-  if (!role) {
-    window.location.href = "login.html";
-    return;
-  }
-
+  if (!role) { window.location.href = "login.html"; return; }
   if (!allowedRoles.includes(role)) {
     if (role === "donor") window.location.href = "donor-dashboard.html";
     else if (role === "ngo") window.location.href = "ngo-dashboard.html";
@@ -59,30 +54,30 @@ function setupRoleNavbar() {
   if (role === "ngo" && ngoLink) ngoLink.style.display = "inline-block";
   if (role === "admin" && adminLink) adminLink.style.display = "inline-block";
 
-  // Add profile link dynamically if not present
-  if (!document.getElementById("navProfile")) {
-    const profileLi = document.createElement("li");
-    profileLi.id = "navProfile";
-    profileLi.innerHTML = '<a href="profile.html">👤 Profile</a>';
-    logoutLink.parentElement.insertAdjacentElement("beforebegin", profileLi);
+  // Inject Profile link only if it doesn't already exist anywhere on the page
+  if (!document.getElementById("navProfile") && logoutLink) {
+    const li = document.createElement("li");
+    li.id = "navProfile";
+    li.innerHTML = '<a href="profile.html">\ud83d\udc64 Profile</a>';
+    logoutLink.parentElement.insertAdjacentElement("beforebegin", li);
   }
 
-  // Add Live Map link dynamically if not present
-  if (!document.getElementById("navLiveMap")) {
-    const mapLi = document.createElement("li");
-    mapLi.id = "navLiveMap";
-    mapLi.innerHTML = '<a href="live-tracking.html">📍 Live Map</a>';
-    logoutLink.parentElement.insertAdjacentElement("beforebegin", mapLi);
+  // Inject Live Map link only if it doesn't already exist anywhere on the page
+  if (!document.getElementById("navLiveMap") && logoutLink) {
+    const li = document.createElement("li");
+    li.id = "navLiveMap";
+    li.innerHTML = '<a href="live-tracking.html">\ud83d\udccd Live Map</a>';
+    logoutLink.parentElement.insertAdjacentElement("beforebegin", li);
   }
 
-  // Hide Available Food and Donate links for admin
+  // Hide Available Food and Donate for admin
   if (role === "admin") {
     document.querySelectorAll("a[href='food.html'], a[href='donate.html']").forEach(el => {
       if (el.parentElement) el.parentElement.style.display = "none";
     });
   }
 
-  // Hide Donate link for NGO
+  // Hide Donate for NGO
   if (role === "ngo") {
     document.querySelectorAll("a[href='donate.html']").forEach(el => {
       if (el.parentElement) el.parentElement.style.display = "none";
